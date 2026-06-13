@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,18 +22,29 @@ type Entry = {
   category: string;
   method: string;
   note: string;
+  title: "Brother" | "Sister";
   date: string; // ISO
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
 const METHODS = ["Cash", "Bank Transfer", "Card", "UPI", "Cheque"];
+const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
+const STORAGE_KEY = "cfa-tithe-entries-v1";
 
 function formatAmount(currency: "INR" | "OMR", amount: number) {
   return currency === "INR" ? `₹${amount.toFixed(2)}` : `${amount.toFixed(3)} OMR`;
 }
 
 function Index() {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [entries, setEntries] = useState<Entry[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as Entry[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState<"INR" | "OMR">("INR");
@@ -41,9 +52,19 @@ function Index() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
   const [note, setNote] = useState("");
+  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch {
+      // ignore quota errors
+    }
+  }, [entries]);
 
   const totals = useMemo(() => {
     let inr = 0, omr = 0;
@@ -74,7 +95,7 @@ function Index() {
     setEntries((prev) => [
       {
         id: crypto.randomUUID(),
-        name, phone, currency, amount: amt, category, method, note, date,
+        name, phone, currency, amount: amt, category, method, note, title, date,
       },
       ...prev,
     ]);
@@ -85,9 +106,18 @@ function Index() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }
 
+  function deleteAllEntries() {
+    if (!entries.length) return;
+    const ok = window.confirm(
+      `Delete ALL ${entries.length} record(s)? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setEntries([]);
+  }
+
   function exportCSV() {
-    const header = ["Date", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
+    const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
+    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
     const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -151,11 +181,17 @@ function Index() {
             <Field label="Note (optional)">
               <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} />
             </Field>
+            <Field label="Title">
+              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input}>
+                {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </Field>
           </div>
 
           <div style={styles.actions}>
             <button type="submit" style={styles.primaryBtn}>＋ Save Record</button>
             <button type="button" onClick={exportCSV} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export CSV</button>
+            <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
 
@@ -176,6 +212,7 @@ function Index() {
             <thead>
               <tr>
                 <th style={styles.th}>Date</th>
+                <th style={styles.th}>Title</th>
                 <th style={styles.th}>Name</th>
                 <th style={{ ...styles.th, ...styles.splitCol }}>Phone</th>
                 <th style={styles.th}>Category</th>
@@ -187,10 +224,11 @@ function Index() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} style={styles.empty}>No records yet — log your first entry above.</td></tr>
+                <tr><td colSpan={9} style={styles.empty}>No records yet — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
                 <tr key={e.id} style={styles.row}>
                   <td style={styles.td}>{e.date}</td>
+                  <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
                   <td style={{ ...styles.td, ...styles.splitCol }}>{e.phone}</td>
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
@@ -204,6 +242,12 @@ function Index() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div style={styles.bottomBar}>
+          <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>
+            🗑 Delete All Records
+          </button>
         </div>
       </div>
     </div>
@@ -292,6 +336,12 @@ const styles: Record<string, React.CSSProperties> = {
     background: "white", color: "#0f172a", border: "1px solid #cbd5e1",
     padding: "12px 20px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: 14,
   },
+  dangerBtn: {
+    background: "linear-gradient(135deg, #ef4444, #b91c1c)", color: "white",
+    border: "none", padding: "12px 20px", borderRadius: 8, fontWeight: 700,
+    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px #ef4444",
+  },
+  bottomBar: { display: "flex", justifyContent: "center", marginTop: 24 },
   tableHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" },
   h2: { margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" },
   tableTools: { display: "flex", gap: 10 },
