@@ -127,7 +127,7 @@ function Index() {
 
   function exportCSV() {
     const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
+    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, `${e.countryCode} ${e.phone}`, e.category, e.method, e.currency, e.amount, e.note]);
     const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
