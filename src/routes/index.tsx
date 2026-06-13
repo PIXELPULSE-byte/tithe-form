@@ -16,6 +16,7 @@ export const Route = createFileRoute("/")({
 type Entry = {
   id: string;
   name: string;
+  countryCode: "+91" | "+968";
   phone: string;
   currency: "INR" | "OMR";
   amount: number;
