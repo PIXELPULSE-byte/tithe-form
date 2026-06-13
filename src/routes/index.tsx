@@ -22,18 +22,29 @@ type Entry = {
   category: string;
   method: string;
   note: string;
+  title: "Brother" | "Sister";
   date: string; // ISO
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
 const METHODS = ["Cash", "Bank Transfer", "Card", "UPI", "Cheque"];
+const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
+const STORAGE_KEY = "cfa-tithe-entries-v1";
 
 function formatAmount(currency: "INR" | "OMR", amount: number) {
   return currency === "INR" ? `₹${amount.toFixed(2)}` : `${amount.toFixed(3)} OMR`;
 }
 
 function Index() {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [entries, setEntries] = useState<Entry[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as Entry[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState<"INR" | "OMR">("INR");
@@ -41,9 +52,19 @@ function Index() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
   const [note, setNote] = useState("");
+  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch {
+      // ignore quota errors
+    }
+  }, [entries]);
 
   const totals = useMemo(() => {
     let inr = 0, omr = 0;
@@ -74,7 +95,7 @@ function Index() {
     setEntries((prev) => [
       {
         id: crypto.randomUUID(),
-        name, phone, currency, amount: amt, category, method, note, date,
+        name, phone, currency, amount: amt, category, method, note, title, date,
       },
       ...prev,
     ]);
@@ -85,9 +106,18 @@ function Index() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }
 
+  function deleteAllEntries() {
+    if (!entries.length) return;
+    const ok = window.confirm(
+      `Delete ALL ${entries.length} record(s)? This cannot be undone.`,
+    );
+    if (!ok) return;
+    setEntries([]);
+  }
+
   function exportCSV() {
-    const header = ["Date", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
+    const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
+    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
     const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
