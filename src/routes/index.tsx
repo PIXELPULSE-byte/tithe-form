@@ -84,8 +84,10 @@ function Index() {
     return entries.filter((e) => {
       if (filterCurrency !== "ALL" && e.currency !== filterCurrency) return false;
       if (!q) return true;
+      const fullPhone = `${e.countryCode} ${e.phone}`;
       return (
         e.name.toLowerCase().includes(q) ||
+        fullPhone.toLowerCase().includes(q) ||
         e.phone.toLowerCase().includes(q) ||
         e.category.toLowerCase().includes(q)
       );
