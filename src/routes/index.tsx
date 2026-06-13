@@ -162,7 +162,27 @@ function Index() {
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} required />
             </Field>
             <Field label="Phone Number">
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +968..." style={styles.input} required />
+              <div style={{ display: "flex", gap: 8 }}>
+                <select
+                  value={countryCode}
+                  onChange={(e) => { setCountryCode(e.target.value as "+91" | "+968"); setPhone(""); }}
+                  style={{ ...styles.input, width: 90, flexShrink: 0 }}
+                >
+                  <option value="+968">+968</option>
+                  <option value="+91">+91</option>
+                </select>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, phoneDigits);
+                    setPhone(digits);
+                  }}
+                  placeholder={`${phoneDigits} digits`}
+                  style={styles.input}
+                  required
+                />
+              </div>
             </Field>
             <Field label="Category">
               <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input}>
