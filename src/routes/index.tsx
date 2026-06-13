@@ -16,6 +16,7 @@ export const Route = createFileRoute("/")({
 type Entry = {
   id: string;
   name: string;
+  countryCode: "+91" | "+968";
   phone: string;
   currency: "INR" | "OMR";
   amount: number;
@@ -46,6 +47,7 @@ function Index() {
     }
   });
   const [name, setName] = useState("");
+  const [countryCode, setCountryCode] = useState<"+91" | "+968">("+968");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState<"INR" | "OMR">("INR");
   const [amount, setAmount] = useState("");
@@ -56,6 +58,8 @@ function Index() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+
+  const phoneDigits = countryCode === "+91" ? 10 : 8;
 
   // Persist to localStorage on every change
   useEffect(() => {
@@ -80,8 +84,10 @@ function Index() {
     return entries.filter((e) => {
       if (filterCurrency !== "ALL" && e.currency !== filterCurrency) return false;
       if (!q) return true;
+      const fullPhone = `${e.countryCode} ${e.phone}`;
       return (
         e.name.toLowerCase().includes(q) ||
+        fullPhone.toLowerCase().includes(q) ||
         e.phone.toLowerCase().includes(q) ||
         e.category.toLowerCase().includes(q)
       );
@@ -92,10 +98,14 @@ function Index() {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!name || !phone || !amt || amt <= 0) return;
+    if (phone.length !== phoneDigits) {
+      window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`);
+      return;
+    }
     setEntries((prev) => [
       {
         id: crypto.randomUUID(),
-        name, phone, currency, amount: amt, category, method, note, title, date,
+        name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
       },
       ...prev,
     ]);
@@ -117,7 +127,7 @@ function Index() {
 
   function exportCSV() {
     const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, e.phone, e.category, e.method, e.currency, e.amount, e.note]);
+    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, `${e.countryCode} ${e.phone}`, e.category, e.method, e.currency, e.amount, e.note]);
     const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -152,7 +162,27 @@ function Index() {
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} required />
             </Field>
             <Field label="Phone Number">
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +968..." style={styles.input} required />
+              <div style={{ display: "flex", gap: 8 }}>
+                <select
+                  value={countryCode}
+                  onChange={(e) => { setCountryCode(e.target.value as "+91" | "+968"); setPhone(""); }}
+                  style={{ ...styles.input, width: 90, flexShrink: 0 }}
+                >
+                  <option value="+968">+968</option>
+                  <option value="+91">+91</option>
+                </select>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "").slice(0, phoneDigits);
+                    setPhone(digits);
+                  }}
+                  placeholder={`${phoneDigits} digits`}
+                  style={styles.input}
+                  required
+                />
+              </div>
             </Field>
             <Field label="Category">
               <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input}>
@@ -230,7 +260,7 @@ function Index() {
                   <td style={styles.td}>{e.date}</td>
                   <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
-                  <td style={{ ...styles.td, ...styles.splitCol }}>{e.phone}</td>
+                  <td style={{ ...styles.td, ...styles.splitCol }}>{e.countryCode} {e.phone}</td>
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
                   <td style={styles.td}>{e.method}</td>
                   <td style={styles.td}>{e.currency}</td>
