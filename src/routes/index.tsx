@@ -181,11 +181,17 @@ function Index() {
             <Field label="Note (optional)">
               <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} />
             </Field>
+            <Field label="Title">
+              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input}>
+                {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </Field>
           </div>
 
           <div style={styles.actions}>
             <button type="submit" style={styles.primaryBtn}>＋ Save Record</button>
             <button type="button" onClick={exportCSV} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export CSV</button>
+            <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
 
@@ -206,6 +212,7 @@ function Index() {
             <thead>
               <tr>
                 <th style={styles.th}>Date</th>
+                <th style={styles.th}>Title</th>
                 <th style={styles.th}>Name</th>
                 <th style={{ ...styles.th, ...styles.splitCol }}>Phone</th>
                 <th style={styles.th}>Category</th>
@@ -217,10 +224,11 @@ function Index() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} style={styles.empty}>No records yet — log your first entry above.</td></tr>
+                <tr><td colSpan={9} style={styles.empty}>No records yet — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
                 <tr key={e.id} style={styles.row}>
                   <td style={styles.td}>{e.date}</td>
+                  <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
                   <td style={{ ...styles.td, ...styles.splitCol }}>{e.phone}</td>
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
@@ -234,6 +242,12 @@ function Index() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div style={styles.bottomBar}>
+          <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>
+            🗑 Delete All Records
+          </button>
         </div>
       </div>
     </div>
@@ -322,6 +336,12 @@ const styles: Record<string, React.CSSProperties> = {
     background: "white", color: "#0f172a", border: "1px solid #cbd5e1",
     padding: "12px 20px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: 14,
   },
+  dangerBtn: {
+    background: "linear-gradient(135deg, #ef4444, #b91c1c)", color: "white",
+    border: "none", padding: "12px 20px", borderRadius: 8, fontWeight: 700,
+    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px #ef4444",
+  },
+  bottomBar: { display: "flex", justifyContent: "center", marginTop: 24 },
   tableHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" },
   h2: { margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" },
   tableTools: { display: "flex", gap: 10 },
