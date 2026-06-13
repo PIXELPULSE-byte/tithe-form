@@ -58,6 +58,7 @@ function Index() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const phoneDigits = countryCode === "+91" ? 10 : 8;
 
@@ -102,18 +103,48 @@ function Index() {
       window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`);
       return;
     }
-    setEntries((prev) => [
-      {
-        id: crypto.randomUUID(),
-        name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
-      },
-      ...prev,
-    ]);
+    if (editingId) {
+      setEntries((prev) => prev.map((en) =>
+        en.id === editingId
+          ? { ...en, name, countryCode, phone, currency, amount: amt, category, method, note, title, date }
+          : en
+      ));
+      setEditingId(null);
+    } else {
+      setEntries((prev) => [
+        {
+          id: crypto.randomUUID(),
+          name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
+        },
+        ...prev,
+      ]);
+    }
+    setName(""); setPhone(""); setAmount(""); setNote("");
+  }
+
+  function startEdit(en: Entry) {
+    setEditingId(en.id);
+    setName(en.name);
+    setCountryCode(en.countryCode);
+    setPhone(en.phone);
+    setCurrency(en.currency);
+    setAmount(String(en.amount));
+    setCategory(en.category);
+    setMethod(en.method);
+    setNote(en.note);
+    setTitle(en.title ?? "Brother");
+    setDate(en.date);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
     setName(""); setPhone(""); setAmount(""); setNote("");
   }
 
   function deleteEntry(id: string) {
     setEntries((prev) => prev.filter((e) => e.id !== id));
+    if (editingId === id) cancelEdit();
   }
 
   function deleteAllEntries() {
@@ -123,6 +154,20 @@ function Index() {
     );
     if (!ok) return;
     setEntries([]);
+  }
+
+  function deleteAllEntriesWithDoubleConfirm() {
+    if (!entries.length) return;
+    const first = window.confirm(
+      `Delete ALL ${entries.length} record(s)? This cannot be undone.`,
+    );
+    if (!first) return;
+    const second = window.confirm(
+      `Are you absolutely sure? All ${entries.length} record(s) will be permanently erased.`,
+    );
+    if (!second) return;
+    setEntries([]);
+    if (editingId) cancelEdit();
   }
 
   function exportCSV() {
@@ -219,7 +264,10 @@ function Index() {
           </div>
 
           <div style={styles.actions}>
-            <button type="submit" style={styles.primaryBtn}>＋ Save Record</button>
+            <button type="submit" style={styles.primaryBtn}>{editingId ? "✓ Update Record" : "＋ Save Record"}</button>
+            {editingId && (
+              <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
+            )}
             <button type="button" onClick={exportCSV} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export CSV</button>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
@@ -256,7 +304,7 @@ function Index() {
               {filtered.length === 0 ? (
                 <tr><td colSpan={9} style={styles.empty}>No records yet — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
-                <tr key={e.id} style={styles.row}>
+                <tr key={e.id} style={{ ...styles.row, background: editingId === e.id ? "#fef3c7" : undefined }}>
                   <td style={styles.td}>{e.date}</td>
                   <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
@@ -266,7 +314,10 @@ function Index() {
                   <td style={styles.td}>{e.currency}</td>
                   <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.currency, e.amount)}</td>
                   <td style={styles.td}>
-                    <button onClick={() => deleteEntry(e.id)} style={styles.deleteBtn} aria-label="Delete">✕</button>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button onClick={() => startEdit(e)} style={styles.editBtn} aria-label="Edit">✎</button>
+                      <button onClick={() => deleteEntry(e.id)} style={styles.deleteBtn} aria-label="Delete">✕</button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -275,7 +326,7 @@ function Index() {
         </div>
 
         <div style={styles.bottomBar}>
-          <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>
+          <button type="button" onClick={deleteAllEntriesWithDoubleConfirm} style={styles.dangerBtn} disabled={!entries.length}>
             🗑 Delete All Records
           </button>
         </div>
@@ -390,6 +441,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   deleteBtn: {
     background: "#fee2e2", color: "#dc2626", border: "none",
+    width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
+  },
+  editBtn: {
+    background: "#dbeafe", color: "#1d4ed8", border: "none",
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   empty: { padding: 36, textAlign: "center", color: "#94a3b8", fontStyle: "italic" },
