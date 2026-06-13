@@ -260,7 +260,7 @@ function Index() {
                   <td style={styles.td}>{e.date}</td>
                   <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
-                  <td style={{ ...styles.td, ...styles.splitCol }}>{e.phone}</td>
+                  <td style={{ ...styles.td, ...styles.splitCol }}>{e.countryCode} {e.phone}</td>
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
                   <td style={styles.td}>{e.method}</td>
                   <td style={styles.td}>{e.currency}</td>
