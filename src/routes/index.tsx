@@ -96,10 +96,14 @@ function Index() {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!name || !phone || !amt || amt <= 0) return;
+    if (phone.length !== phoneDigits) {
+      window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`);
+      return;
+    }
     setEntries((prev) => [
       {
         id: crypto.randomUUID(),
-        name, phone, currency, amount: amt, category, method, note, title, date,
+        name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
       },
       ...prev,
     ]);
