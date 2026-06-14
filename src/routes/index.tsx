@@ -192,7 +192,6 @@ function Index() {
         </header>
 
         <section style={styles.dashboard}>
-          <StatCard label="Total Indian Rupee (INR)" value={`₹${totals.inr.toFixed(2)}`} accent="#10b981" />
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#0ea5e9" />
           <StatCard label="Total Entries" value={String(totals.count)} accent="#6366f1" />
         </section>
