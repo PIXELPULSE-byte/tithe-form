@@ -303,7 +303,7 @@ function Index() {
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
                   <td style={styles.td}>{e.method}</td>
                   <td style={styles.td}>{e.currency}</td>
-                  <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.currency, e.amount)}</td>
+                  <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.amount)}</td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button onClick={() => startEdit(e)} style={styles.editBtn} aria-label="Edit">✎</button>
