@@ -47,9 +47,9 @@ function Index() {
     }
   });
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState<"+91" | "+968">("+968");
+  const [countryCode, setCountryCode] = useState<"+968">("+968");
   const [phone, setPhone] = useState("");
-  const [currency, setCurrency] = useState<"INR" | "OMR">("INR");
+  const [currency, setCurrency] = useState<"OMR">("OMR");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
@@ -57,10 +57,10 @@ function Index() {
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
-  const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+  const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const phoneDigits = countryCode === "+91" ? 10 : 8;
+  const phoneDigits = 8;
 
   // Persist to localStorage on every change
   useEffect(() => {
