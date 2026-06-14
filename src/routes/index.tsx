@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import cfaLogo from "@/assets/cfa-logo.png.asset.json";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
@@ -329,11 +330,8 @@ function Index() {
     <div style={styles.page}>
       <div style={styles.container}>
         <header style={styles.header}>
-          <div style={styles.cross}>✟</div>
-          <div>
-            <h1 style={styles.h1}>Christian Faith Assembly</h1>
-            <p style={styles.subtitle}>Tithe Register Form</p>
-          </div>
+          <img src={cfaLogo.url} alt="CFA — Perfecting in Christ" style={styles.logoImg} />
+          <p style={styles.subtitle}>Tithe Registration</p>
         </header>
 
         <section style={styles.dashboard}>
