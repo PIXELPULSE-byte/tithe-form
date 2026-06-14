@@ -206,14 +206,9 @@ function Index() {
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <select
-                  value={countryCode}
-                  onChange={(e) => { setCountryCode(e.target.value as "+91" | "+968"); setPhone(""); }}
-                  style={{ ...styles.input, width: 90, flexShrink: 0 }}
-                >
-                  <option value="+968">+968</option>
-                  <option value="+91">+91</option>
-                </select>
+                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }}>
+                  +968
+                </div>
                 <input
                   type="tel"
                   value={phone}
