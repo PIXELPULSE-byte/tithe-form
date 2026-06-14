@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
+} from "docx";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +38,46 @@ const STORAGE_KEY = "cfa-tithe-entries-v1";
 
 function formatAmount(amount: number) {
   return `${amount.toFixed(3)} OMR`;
+}
+
+// Convert a number into English words (supports OMR with 3-decimal baisa).
+const ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+  "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+function twoDigits(n: number): string {
+  if (n < 20) return ONES[n];
+  const t = Math.floor(n / 10), o = n % 10;
+  return TENS[t] + (o ? " " + ONES[o] : "");
+}
+function threeDigits(n: number): string {
+  const h = Math.floor(n / 100), r = n % 100;
+  const parts: string[] = [];
+  if (h) parts.push(ONES[h] + " Hundred");
+  if (r) parts.push(twoDigits(r));
+  return parts.join(" ");
+}
+function intToWords(n: number): string {
+  if (n === 0) return "Zero";
+  const units = ["", "Thousand", "Million", "Billion"];
+  let i = 0;
+  const chunks: string[] = [];
+  while (n > 0) {
+    const c = n % 1000;
+    if (c) chunks.unshift(threeDigits(c) + (units[i] ? " " + units[i] : ""));
+    n = Math.floor(n / 1000);
+    i++;
+  }
+  return chunks.join(" ");
+}
+function amountInWords(amount: number): string {
+  if (!isFinite(amount) || amount <= 0) return "";
+  const rial = Math.floor(amount);
+  const baisa = Math.round((amount - rial) * 1000);
+  const parts: string[] = [];
+  if (rial > 0) parts.push(`${intToWords(rial)} Rial${rial === 1 ? "" : "s"}`);
+  if (baisa > 0) parts.push(`${intToWords(baisa)} Baisa`);
+  if (!parts.length) return "Zero Rials";
+  return parts.join(" and ") + " Only";
 }
 
 function Index() {
