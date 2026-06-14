@@ -269,9 +269,8 @@ function Index() {
           <h2 style={styles.h2}>Logged Transactions</h2>
           <div style={styles.tableTools}>
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} />
-            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "INR" | "OMR")} style={{ ...styles.input, width: 140 }}>
-              <option value="ALL">All currencies</option>
-              <option value="INR">INR only</option>
+            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }}>
+              <option value="ALL">All records</option>
               <option value="OMR">OMR only</option>
             </select>
           </div>
