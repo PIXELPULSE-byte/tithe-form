@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
+} from "docx";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +38,46 @@ const STORAGE_KEY = "cfa-tithe-entries-v1";
 
 function formatAmount(amount: number) {
   return `${amount.toFixed(3)} OMR`;
+}
+
+// Convert a number into English words (supports OMR with 3-decimal baisa).
+const ONES = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+  "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+function twoDigits(n: number): string {
+  if (n < 20) return ONES[n];
+  const t = Math.floor(n / 10), o = n % 10;
+  return TENS[t] + (o ? " " + ONES[o] : "");
+}
+function threeDigits(n: number): string {
+  const h = Math.floor(n / 100), r = n % 100;
+  const parts: string[] = [];
+  if (h) parts.push(ONES[h] + " Hundred");
+  if (r) parts.push(twoDigits(r));
+  return parts.join(" ");
+}
+function intToWords(n: number): string {
+  if (n === 0) return "Zero";
+  const units = ["", "Thousand", "Million", "Billion"];
+  let i = 0;
+  const chunks: string[] = [];
+  while (n > 0) {
+    const c = n % 1000;
+    if (c) chunks.unshift(threeDigits(c) + (units[i] ? " " + units[i] : ""));
+    n = Math.floor(n / 1000);
+    i++;
+  }
+  return chunks.join(" ");
+}
+function amountInWords(amount: number): string {
+  if (!isFinite(amount) || amount <= 0) return "";
+  const rial = Math.floor(amount);
+  const baisa = Math.round((amount - rial) * 1000);
+  const parts: string[] = [];
+  if (rial > 0) parts.push(`${intToWords(rial)} Rial${rial === 1 ? "" : "s"}`);
+  if (baisa > 0) parts.push(`${intToWords(baisa)} Baisa`);
+  if (!parts.length) return "Zero Rials";
+  return parts.join(" and ") + " Only";
 }
 
 function Index() {
@@ -169,15 +213,116 @@ function Index() {
     if (editingId) cancelEdit();
   }
 
-  function exportCSV() {
-    const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, `${e.countryCode} ${e.phone}`, e.category, e.method, e.currency, e.amount, e.note]);
-    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+  async function exportWord() {
+    if (!entries.length) return;
+    const HEADERS = ["Date", "Title", "Name", "Phone", "Category", "Method", "Amount (OMR)", "Amount In Words", "Note"];
+    const COL_COLORS = ["#dbeafe", "#fef3c7", "#dcfce7", "#e0e7ff", "#fce7f3", "#ffedd5", "#d1fae5", "#ede9fe", "#f1f5f9"];
+
+    const border = { style: BorderStyle.SINGLE, size: 6, color: "94a3b8" };
+    const borders = { top: border, bottom: border, left: border, right: border };
+
+    const headerRow = new TableRow({
+      tableHeader: true,
+      children: HEADERS.map((h) => new TableCell({
+        borders,
+        shading: { fill: "0F172A", type: ShadingType.CLEAR, color: "auto" },
+        margins: { top: 100, bottom: 100, left: 120, right: 120 },
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: h, bold: true, color: "FFFFFF", size: 22 })],
+        })],
+      })),
+    });
+
+    const dataRows = entries.map((e, idx) => {
+      const cells = [
+        e.date,
+        e.title ?? "",
+        e.name,
+        `${e.countryCode} ${e.phone}`,
+        e.category,
+        e.method,
+        `${e.amount.toFixed(3)} OMR`,
+        amountInWords(e.amount),
+        e.note || "",
+      ];
+      const zebra = idx % 2 === 0 ? "FFFFFF" : "F8FAFC";
+      return new TableRow({
+        children: cells.map((val, ci) => new TableCell({
+          borders,
+          shading: { fill: zebra, type: ShadingType.CLEAR, color: "auto" },
+          margins: { top: 80, bottom: 80, left: 120, right: 120 },
+          children: [new Paragraph({
+            children: [new TextRun({
+              text: val,
+              size: 20,
+              bold: ci === 2 || ci === 6,
+              color: ci === 6 ? "059669" : "0F172A",
+            })],
+          })],
+        })),
+      });
+    });
+    void COL_COLORS;
+
+    const totalOmr = entries.reduce((s, e) => s + e.amount, 0);
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 16838, height: 11906, orientation: PageOrientation.LANDSCAPE },
+            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          },
+        },
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            heading: HeadingLevel.HEADING_1,
+            children: [new TextRun({ text: "Christian Faith Assembly", bold: true, size: 44, color: "6366F1" })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: "Tithe Register", bold: true, size: 28, color: "64748B" })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 },
+            children: [new TextRun({ text: `Generated on ${new Date().toLocaleDateString()}`, italics: true, size: 18, color: "94A3B8" })],
+          }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [headerRow, ...dataRows],
+          }),
+          new Paragraph({ spacing: { before: 240 }, children: [new TextRun("")] }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({ text: "Total Entries: ", bold: true, size: 22 }),
+              new TextRun({ text: `${entries.length}    `, size: 22 }),
+              new TextRun({ text: "Total: ", bold: true, size: 22 }),
+              new TextRun({ text: `${totalOmr.toFixed(3)} OMR`, bold: true, size: 24, color: "059669" }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({ text: "In Words: ", bold: true, size: 20 }),
+              new TextRun({ text: amountInWords(totalOmr), italics: true, size: 20, color: "475569" }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -237,13 +382,13 @@ function Index() {
                 {METHODS.map((m) => <option key={m}>{m}</option>)}
               </select>
             </Field>
-            <Field label="Currency">
-              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#f1f5f9" }}>
-                OMR (Omani Rial)
-              </div>
-            </Field>
             <Field label="Amount">
               <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
+            </Field>
+            <Field label="In Words (auto)">
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#ecfdf5", border: "1px solid #6ee7b7", minHeight: 40 }}>
+                {amountInWords(parseFloat(amount) || 0) || <span style={{ color: "#94a3b8", fontWeight: 400 }}>e.g. Ten Rials Only</span>}
+              </div>
             </Field>
             <Field label="Note (optional)">
               <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} />
@@ -260,7 +405,7 @@ function Index() {
             {editingId && (
               <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
             )}
-            <button type="button" onClick={exportCSV} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export CSV</button>
+            <button type="button" onClick={exportWord} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Word</button>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
