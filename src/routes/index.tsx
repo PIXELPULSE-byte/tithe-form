@@ -213,15 +213,116 @@ function Index() {
     if (editingId) cancelEdit();
   }
 
-  function exportCSV() {
-    const header = ["Date", "Title", "Name", "Phone", "Category", "Method", "Currency", "Amount", "Note"];
-    const rows = entries.map((e) => [e.date, e.title ?? "", e.name, `${e.countryCode} ${e.phone}`, e.category, e.method, e.currency, e.amount, e.note]);
-    const csv = [header, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+  async function exportWord() {
+    if (!entries.length) return;
+    const HEADERS = ["Date", "Title", "Name", "Phone", "Category", "Method", "Amount (OMR)", "Amount In Words", "Note"];
+    const COL_COLORS = ["#dbeafe", "#fef3c7", "#dcfce7", "#e0e7ff", "#fce7f3", "#ffedd5", "#d1fae5", "#ede9fe", "#f1f5f9"];
+
+    const border = { style: BorderStyle.SINGLE, size: 6, color: "94a3b8" };
+    const borders = { top: border, bottom: border, left: border, right: border };
+
+    const headerRow = new TableRow({
+      tableHeader: true,
+      children: HEADERS.map((h) => new TableCell({
+        borders,
+        shading: { fill: "0F172A", type: ShadingType.CLEAR, color: "auto" },
+        margins: { top: 100, bottom: 100, left: 120, right: 120 },
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [new TextRun({ text: h, bold: true, color: "FFFFFF", size: 22 })],
+        })],
+      })),
+    });
+
+    const dataRows = entries.map((e, idx) => {
+      const cells = [
+        e.date,
+        e.title ?? "",
+        e.name,
+        `${e.countryCode} ${e.phone}`,
+        e.category,
+        e.method,
+        `${e.amount.toFixed(3)} OMR`,
+        amountInWords(e.amount),
+        e.note || "",
+      ];
+      const zebra = idx % 2 === 0 ? "FFFFFF" : "F8FAFC";
+      return new TableRow({
+        children: cells.map((val, ci) => new TableCell({
+          borders,
+          shading: { fill: zebra, type: ShadingType.CLEAR, color: "auto" },
+          margins: { top: 80, bottom: 80, left: 120, right: 120 },
+          children: [new Paragraph({
+            children: [new TextRun({
+              text: val,
+              size: 20,
+              bold: ci === 2 || ci === 6,
+              color: ci === 6 ? "059669" : "0F172A",
+            })],
+          })],
+        })),
+      });
+    });
+    void COL_COLORS;
+
+    const totalOmr = entries.reduce((s, e) => s + e.amount, 0);
+
+    const doc = new Document({
+      styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 16838, height: 11906, orientation: PageOrientation.LANDSCAPE },
+            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          },
+        },
+        children: [
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            heading: HeadingLevel.HEADING_1,
+            children: [new TextRun({ text: "Christian Faith Assembly", bold: true, size: 44, color: "6366F1" })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: "Tithe Register", bold: true, size: 28, color: "64748B" })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 },
+            children: [new TextRun({ text: `Generated on ${new Date().toLocaleDateString()}`, italics: true, size: 18, color: "94A3B8" })],
+          }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [headerRow, ...dataRows],
+          }),
+          new Paragraph({ spacing: { before: 240 }, children: [new TextRun("")] }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({ text: "Total Entries: ", bold: true, size: 22 }),
+              new TextRun({ text: `${entries.length}    `, size: 22 }),
+              new TextRun({ text: "Total: ", bold: true, size: 22 }),
+              new TextRun({ text: `${totalOmr.toFixed(3)} OMR`, bold: true, size: 24, color: "059669" }),
+            ],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({ text: "In Words: ", bold: true, size: 20 }),
+              new TextRun({ text: amountInWords(totalOmr), italics: true, size: 20, color: "475569" }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
