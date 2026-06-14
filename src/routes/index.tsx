@@ -16,9 +16,9 @@ export const Route = createFileRoute("/")({
 type Entry = {
   id: string;
   name: string;
-  countryCode: "+91" | "+968";
+  countryCode: "+968";
   phone: string;
-  currency: "INR" | "OMR";
+  currency: "OMR";
   amount: number;
   category: string;
   method: string;
@@ -28,12 +28,12 @@ type Entry = {
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
-const METHODS = ["Cash", "Bank Transfer", "Card", "UPI", "Cheque"];
+const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
 const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
 
-function formatAmount(currency: "INR" | "OMR", amount: number) {
-  return currency === "INR" ? `₹${amount.toFixed(2)}` : `${amount.toFixed(3)} OMR`;
+function formatAmount(amount: number) {
+  return `${amount.toFixed(3)} OMR`;
 }
 
 function Index() {
