@@ -72,12 +72,11 @@ function Index() {
   }, [entries]);
 
   const totals = useMemo(() => {
-    let inr = 0, omr = 0;
+    let omr = 0;
     for (const e of entries) {
-      if (e.currency === "INR") inr += e.amount;
-      else omr += e.amount;
+      omr += e.amount;
     }
-    return { inr, omr, count: entries.length };
+    return { omr, count: entries.length };
   }, [entries]);
 
   const filtered = useMemo(() => {
