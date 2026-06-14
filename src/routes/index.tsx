@@ -405,7 +405,7 @@ function Index() {
             {editingId && (
               <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
             )}
-            <button type="button" onClick={exportCSV} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export CSV</button>
+            <button type="button" onClick={exportWord} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Word</button>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
