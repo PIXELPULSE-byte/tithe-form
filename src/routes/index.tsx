@@ -238,10 +238,9 @@ function Index() {
               </select>
             </Field>
             <Field label="Currency">
-              <select value={currency} onChange={(e) => setCurrency(e.target.value as "INR" | "OMR")} style={styles.input}>
-                <option value="INR">Rupee (₹)</option>
-                <option value="OMR">Rial (OMR)</option>
-              </select>
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#f1f5f9" }}>
+                OMR (Omani Rial)
+              </div>
             </Field>
             <Field label="Amount">
               <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
