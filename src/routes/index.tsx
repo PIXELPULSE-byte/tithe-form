@@ -5,7 +5,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Christian Faith Assembly — Tithe Register" },
-      { name: "description", content: "Tithe Register Form for Christian Faith Assembly. Log member tithes in INR and OMR with live dashboard totals." },
+      { name: "description", content: "Tithe Register Form for Christian Faith Assembly. Log member tithes in OMR with live dashboard totals." },
       { property: "og:title", content: "Christian Faith Assembly — Tithe Register" },
       { property: "og:description", content: "Tithe Register Form for Christian Faith Assembly." },
     ],
