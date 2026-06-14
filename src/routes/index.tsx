@@ -5,7 +5,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Christian Faith Assembly — Tithe Register" },
-      { name: "description", content: "Tithe Register Form for Christian Faith Assembly. Log member tithes in INR and OMR with live dashboard totals." },
+      { name: "description", content: "Tithe Register Form for Christian Faith Assembly. Log member tithes in OMR with live dashboard totals." },
       { property: "og:title", content: "Christian Faith Assembly — Tithe Register" },
       { property: "og:description", content: "Tithe Register Form for Christian Faith Assembly." },
     ],
@@ -16,9 +16,9 @@ export const Route = createFileRoute("/")({
 type Entry = {
   id: string;
   name: string;
-  countryCode: "+91" | "+968";
+  countryCode: "+968";
   phone: string;
-  currency: "INR" | "OMR";
+  currency: "OMR";
   amount: number;
   category: string;
   method: string;
@@ -28,12 +28,12 @@ type Entry = {
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
-const METHODS = ["Cash", "Bank Transfer", "Card", "UPI", "Cheque"];
+const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
 const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
 
-function formatAmount(currency: "INR" | "OMR", amount: number) {
-  return currency === "INR" ? `₹${amount.toFixed(2)}` : `${amount.toFixed(3)} OMR`;
+function formatAmount(amount: number) {
+  return `${amount.toFixed(3)} OMR`;
 }
 
 function Index() {
@@ -47,9 +47,9 @@ function Index() {
     }
   });
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState<"+91" | "+968">("+968");
+  const [countryCode, setCountryCode] = useState<"+968">("+968");
   const [phone, setPhone] = useState("");
-  const [currency, setCurrency] = useState<"INR" | "OMR">("INR");
+  const [currency, setCurrency] = useState<"OMR">("OMR");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
@@ -57,10 +57,10 @@ function Index() {
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
-  const [filterCurrency, setFilterCurrency] = useState<"ALL" | "INR" | "OMR">("ALL");
+  const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const phoneDigits = countryCode === "+91" ? 10 : 8;
+  const phoneDigits = 8;
 
   // Persist to localStorage on every change
   useEffect(() => {
@@ -72,12 +72,11 @@ function Index() {
   }, [entries]);
 
   const totals = useMemo(() => {
-    let inr = 0, omr = 0;
+    let omr = 0;
     for (const e of entries) {
-      if (e.currency === "INR") inr += e.amount;
-      else omr += e.amount;
+      omr += e.amount;
     }
-    return { inr, omr, count: entries.length };
+    return { omr, count: entries.length };
   }, [entries]);
 
   const filtered = useMemo(() => {
@@ -193,7 +192,6 @@ function Index() {
         </header>
 
         <section style={styles.dashboard}>
-          <StatCard label="Total Indian Rupee (INR)" value={`₹${totals.inr.toFixed(2)}`} accent="#10b981" />
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#0ea5e9" />
           <StatCard label="Total Entries" value={String(totals.count)} accent="#6366f1" />
         </section>
@@ -208,14 +206,9 @@ function Index() {
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <select
-                  value={countryCode}
-                  onChange={(e) => { setCountryCode(e.target.value as "+91" | "+968"); setPhone(""); }}
-                  style={{ ...styles.input, width: 90, flexShrink: 0 }}
-                >
-                  <option value="+968">+968</option>
-                  <option value="+91">+91</option>
-                </select>
+                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }}>
+                  +968
+                </div>
                 <input
                   type="tel"
                   value={phone}
@@ -245,10 +238,9 @@ function Index() {
               </select>
             </Field>
             <Field label="Currency">
-              <select value={currency} onChange={(e) => setCurrency(e.target.value as "INR" | "OMR")} style={styles.input}>
-                <option value="INR">Rupee (₹)</option>
-                <option value="OMR">Rial (OMR)</option>
-              </select>
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#f1f5f9" }}>
+                OMR (Omani Rial)
+              </div>
             </Field>
             <Field label="Amount">
               <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
@@ -277,9 +269,8 @@ function Index() {
           <h2 style={styles.h2}>Logged Transactions</h2>
           <div style={styles.tableTools}>
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} />
-            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "INR" | "OMR")} style={{ ...styles.input, width: 140 }}>
-              <option value="ALL">All currencies</option>
-              <option value="INR">INR only</option>
+            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }}>
+              <option value="ALL">All records</option>
               <option value="OMR">OMR only</option>
             </select>
           </div>
@@ -312,7 +303,7 @@ function Index() {
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
                   <td style={styles.td}>{e.method}</td>
                   <td style={styles.td}>{e.currency}</td>
-                  <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.currency, e.amount)}</td>
+                  <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.amount)}</td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 6 }}>
                       <button onClick={() => startEdit(e)} style={styles.editBtn} aria-label="Edit">✎</button>
