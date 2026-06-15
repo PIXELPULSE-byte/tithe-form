@@ -5,8 +5,9 @@ import cfaText from "@/assets/cfa-text.png.asset.json";
 import bgWallpaper from "@/assets/bg-wallpaper.jpg";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
+  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation, ImageRun,
 } from "docx";
+import ExcelJS from "exceljs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -216,6 +217,11 @@ function Index() {
     if (editingId) cancelEdit();
   }
 
+  async function fetchImageBuffer(url: string): Promise<ArrayBuffer> {
+    const res = await fetch(url);
+    return await res.arrayBuffer();
+  }
+
   async function exportWord() {
     if (!entries.length) return;
     const HEADERS = ["Date", "Title", "Name", "Phone", "Category", "Method", "Amount (OMR)", "Amount In Words", "Note"];
@@ -270,6 +276,11 @@ function Index() {
 
     const totalOmr = entries.reduce((s, e) => s + e.amount, 0);
 
+    const [logoBuf, textBuf] = await Promise.all([
+      fetchImageBuffer(cfaLogo.url),
+      fetchImageBuffer(cfaText.url),
+    ]);
+
     const doc = new Document({
       styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
       sections: [{
@@ -282,11 +293,24 @@ function Index() {
         children: [
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            heading: HeadingLevel.HEADING_1,
-            children: [new TextRun({ text: "Christian Faith Assembly", bold: true, size: 44, color: "6366F1" })],
+            children: [new ImageRun({
+              type: "png",
+              data: logoBuf,
+              transformation: { width: 90, height: 90 },
+            })],
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
+            spacing: { before: 120 },
+            children: [new ImageRun({
+              type: "png",
+              data: textBuf,
+              transformation: { width: 420, height: 70 },
+            })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            heading: HeadingLevel.HEADING_2,
             children: [new TextRun({ text: "Tithe Register", bold: true, size: 28, color: "64748B" })],
           }),
           new Paragraph({
@@ -324,6 +348,133 @@ function Index() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function exportExcel() {
+    if (!entries.length) return;
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "Christian Faith Assembly";
+    wb.created = new Date();
+    const ws = wb.addWorksheet("Tithe Register", {
+      pageSetup: { orientation: "landscape", horizontalCentered: true, fitToPage: true, fitToWidth: 1, margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
+      views: [{ state: "normal", showGridLines: false }],
+    });
+
+    const HEADERS = ["Date", "Title", "Name", "Phone", "Category", "Method", "Amount (OMR)", "Amount In Words", "Note"];
+    const widths = [14, 10, 22, 18, 16, 16, 18, 42, 26];
+    ws.columns = HEADERS.map((h, i) => ({ header: h, key: h, width: widths[i] }));
+
+    // Embed logo + text image at the top
+    const [logoBuf, textBuf] = await Promise.all([
+      fetchImageBuffer(cfaLogo.url),
+      fetchImageBuffer(cfaText.url),
+    ]);
+    const logoId = wb.addImage({ buffer: logoBuf, extension: "png" });
+    const textId = wb.addImage({ buffer: textBuf, extension: "png" });
+
+    // Reserve top rows for branding (rows 1-5)
+    for (let r = 1; r <= 5; r++) ws.getRow(r).height = 22;
+
+    ws.addImage(logoId, { tl: { col: 0.2, row: 0.2 }, ext: { width: 90, height: 90 } });
+    ws.addImage(textId, { tl: { col: 2.5, row: 0.5 }, ext: { width: 380, height: 70 } });
+
+    // Subtitle row
+    ws.mergeCells(6, 1, 6, HEADERS.length);
+    const subtitle = ws.getCell(6, 1);
+    subtitle.value = "Tithe Register";
+    subtitle.alignment = { horizontal: "center", vertical: "middle" };
+    subtitle.font = { name: "Calibri", size: 18, bold: true, color: { argb: "FF334155" } };
+    ws.getRow(6).height = 28;
+
+    ws.mergeCells(7, 1, 7, HEADERS.length);
+    const gen = ws.getCell(7, 1);
+    gen.value = `Generated on ${new Date().toLocaleDateString()}`;
+    gen.alignment = { horizontal: "center" };
+    gen.font = { italic: true, color: { argb: "FF94A3B8" }, size: 11 };
+    ws.getRow(7).height = 18;
+
+    // Header row at row 9
+    const headerRowIdx = 9;
+    const headerRow = ws.getRow(headerRowIdx);
+    HEADERS.forEach((h, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = h;
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin", color: { argb: "FF64748B" } },
+        bottom: { style: "thin", color: { argb: "FF64748B" } },
+        left: { style: "thin", color: { argb: "FF64748B" } },
+        right: { style: "thin", color: { argb: "FF64748B" } },
+      };
+    });
+    headerRow.height = 26;
+
+    // Data rows
+    entries.forEach((e, idx) => {
+      const r = headerRowIdx + 1 + idx;
+      const row = ws.getRow(r);
+      const values = [
+        e.date,
+        e.title ?? "",
+        e.name,
+        `${e.countryCode} ${e.phone}`,
+        e.category,
+        e.method,
+        e.amount,
+        amountInWords(e.amount),
+        e.note || "",
+      ];
+      values.forEach((v, i) => {
+        const cell = row.getCell(i + 1);
+        cell.value = v as string | number;
+        cell.alignment = { vertical: "middle", wrapText: true, horizontal: i === 6 ? "right" : "left" };
+        cell.font = { name: "Calibri", size: 11, bold: i === 2 || i === 6, color: { argb: i === 6 ? "FF059669" : "FF0F172A" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: idx % 2 === 0 ? "FFFFFFFF" : "FFF1F5F9" },
+        };
+        cell.border = {
+          top: { style: "hair", color: { argb: "FFCBD5E1" } },
+          bottom: { style: "hair", color: { argb: "FFCBD5E1" } },
+          left: { style: "hair", color: { argb: "FFCBD5E1" } },
+          right: { style: "hair", color: { argb: "FFCBD5E1" } },
+        };
+        if (i === 6) cell.numFmt = "0.000\" OMR\"";
+      });
+      row.height = 22;
+    });
+
+    // Totals row
+    const totalOmr = entries.reduce((s, e) => s + e.amount, 0);
+    const totalRowIdx = headerRowIdx + 1 + entries.length + 1;
+    ws.mergeCells(totalRowIdx, 1, totalRowIdx, 6);
+    const lbl = ws.getCell(totalRowIdx, 1);
+    lbl.value = `Total Entries: ${entries.length}    Grand Total`;
+    lbl.alignment = { horizontal: "right", vertical: "middle" };
+    lbl.font = { bold: true, size: 12, color: { argb: "FF0F172A" } };
+    const tot = ws.getCell(totalRowIdx, 7);
+    tot.value = totalOmr;
+    tot.numFmt = "0.000\" OMR\"";
+    tot.font = { bold: true, size: 13, color: { argb: "FF059669" } };
+    tot.alignment = { horizontal: "right", vertical: "middle" };
+    ws.mergeCells(totalRowIdx, 8, totalRowIdx, 9);
+    const wordsCell = ws.getCell(totalRowIdx, 8);
+    wordsCell.value = amountInWords(totalOmr);
+    wordsCell.font = { italic: true, color: { argb: "FF475569" }, size: 11 };
+    wordsCell.alignment = { horizontal: "left", vertical: "middle", wrapText: true };
+    ws.getRow(totalRowIdx).height = 26;
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tithe-register-${new Date().toISOString().slice(0, 10)}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -412,6 +563,7 @@ function Index() {
               <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
             )}
             <button type="button" onClick={exportWord} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Word</button>
+            <button type="button" onClick={exportExcel} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Excel</button>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
@@ -527,7 +679,7 @@ const styles: Record<string, React.CSSProperties> = {
   headerCenter: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
   headerRight: {},
   logoImg: { width: 100, height: "auto", objectFit: "contain" },
-  textImg: { width: 320, height: "auto", objectFit: "contain", maxWidth: "100%" },
+  textImg: { width: 520, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
   subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" },
   dashboard: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 },
