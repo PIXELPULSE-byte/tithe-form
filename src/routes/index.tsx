@@ -107,6 +107,8 @@ function Index() {
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
 
   const phoneDigits = 8;
 
@@ -562,8 +564,22 @@ function Index() {
             {editingId && (
               <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
             )}
-            <button type="button" onClick={exportWord} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Word</button>
-            <button type="button" onClick={exportExcel} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Excel</button>
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setShowExportMenu((s) => !s)}
+                style={styles.secondaryBtn}
+                disabled={!entries.length}
+              >
+                ⤓ Exports ▼
+              </button>
+              {showExportMenu && (
+                <div style={styles.dropdown}>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportWord(); }} style={styles.dropdownItem}>WORD</button>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportExcel(); }} style={styles.dropdownItem}>EXCEL</button>
+                </div>
+              )}
+            </div>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
@@ -745,4 +761,16 @@ const styles: Record<string, React.CSSProperties> = {
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   empty: { padding: 36, textAlign: "center", color: "#94a3b8", fontStyle: "italic" },
+  dropdown: {
+    position: "absolute", top: "calc(100% + 6px)", right: 0,
+    background: "white", border: "1px solid #cbd5e1", borderRadius: 8,
+    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", zIndex: 50,
+    display: "flex", flexDirection: "column", minWidth: 140,
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    background: "white", color: "#0f172a", border: "none",
+    padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
+    textAlign: "left",
+  },
 };
