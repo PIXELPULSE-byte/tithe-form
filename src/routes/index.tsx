@@ -528,7 +528,7 @@ const styles: Record<string, React.CSSProperties> = {
   headerCenter: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
   headerRight: {},
   logoImg: { width: 100, height: "auto", objectFit: "contain" },
-  textImg: { width: 320, height: "auto", objectFit: "contain", maxWidth: "100%" },
+  textImg: { width: 520, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
   subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" },
   dashboard: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 },
