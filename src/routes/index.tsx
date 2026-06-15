@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
+import cfaText from "@/assets/cfa-text.png.asset.json";
+import bgWallpaper from "@/assets/bg-wallpaper.jpg";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
@@ -330,8 +332,14 @@ function Index() {
     <div style={styles.page}>
       <div style={styles.container}>
         <header style={styles.header}>
-          <img src={cfaLogo.url} alt="CFA — Perfecting in Christ" style={styles.logoImg} />
-          <p style={styles.subtitle}>Tithe Registration</p>
+          <div style={styles.headerLeft}>
+            <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
+          </div>
+          <div style={styles.headerCenter}>
+            <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
+            <p style={styles.subtitle}>Tithe Registration</p>
+          </div>
+          <div style={styles.headerRight} />
         </header>
 
         <section style={styles.dashboard}>
@@ -490,7 +498,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+    backgroundImage: `url(${bgWallpaper})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
     padding: "32px 16px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     color: "#0f172a",
@@ -504,17 +515,21 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: "0 25px 60px -15px rgba(0,0,0,0.5)",
   },
   header: {
-    display: "flex",
-    flexDirection: "column",
+    display: "grid",
+    gridTemplateColumns: "120px 1fr 120px",
     alignItems: "center",
     gap: 10,
     paddingBottom: 24,
     borderBottom: "2px solid #e2e8f0",
     marginBottom: 28,
   },
-  logoImg: { width: 160, height: "auto", objectFit: "contain" },
+  headerLeft: { display: "flex", alignItems: "center" },
+  headerCenter: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
+  headerRight: {},
+  logoImg: { width: 100, height: "auto", objectFit: "contain" },
+  textImg: { width: 320, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
-  subtitle: { margin: "4px 0 0", fontSize: 14, fontWeight: 700, color: "#64748b", letterSpacing: "0.08em", textTransform: "uppercase" },
+  subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" },
   dashboard: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 },
   statBox: {
     background: "#f8fafc", borderRadius: 12, padding: "18px 20px",
