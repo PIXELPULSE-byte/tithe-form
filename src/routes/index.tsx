@@ -5,8 +5,9 @@ import cfaText from "@/assets/cfa-text.png.asset.json";
 import bgWallpaper from "@/assets/bg-wallpaper.jpg";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
+  WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation, ImageRun,
 } from "docx";
+import ExcelJS from "exceljs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
