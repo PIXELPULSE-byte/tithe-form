@@ -761,4 +761,15 @@ const styles: Record<string, React.CSSProperties> = {
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   empty: { padding: 36, textAlign: "center", color: "#94a3b8", fontStyle: "italic" },
-};
+  dropdown: {
+    position: "absolute", top: "calc(100% + 6px)", right: 0,
+    background: "white", border: "1px solid #cbd5e1", borderRadius: 8,
+    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", zIndex: 50,
+    display: "flex", flexDirection: "column", minWidth: 140,
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    background: "white", color: "#0f172a", border: "none",
+    padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
+    textAlign: "left",
+  },
