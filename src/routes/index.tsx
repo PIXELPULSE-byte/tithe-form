@@ -773,3 +773,4 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
     textAlign: "left",
   },
+};
