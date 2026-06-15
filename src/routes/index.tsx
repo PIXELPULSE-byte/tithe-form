@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
+import cfaText from "@/assets/cfa-text.png.asset.json";
+import bgWallpaper from "@/assets/bg-wallpaper.jpg";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation,
