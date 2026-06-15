@@ -107,6 +107,8 @@ function Index() {
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
 
   const phoneDigits = 8;
 
