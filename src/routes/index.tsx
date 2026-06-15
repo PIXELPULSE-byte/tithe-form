@@ -332,8 +332,14 @@ function Index() {
     <div style={styles.page}>
       <div style={styles.container}>
         <header style={styles.header}>
-          <img src={cfaLogo.url} alt="CFA — Perfecting in Christ" style={styles.logoImg} />
-          <p style={styles.subtitle}>Tithe Registration</p>
+          <div style={styles.headerLeft}>
+            <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
+          </div>
+          <div style={styles.headerCenter}>
+            <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
+            <p style={styles.subtitle}>Tithe Registration</p>
+          </div>
+          <div style={styles.headerRight} />
         </header>
 
         <section style={styles.dashboard}>
