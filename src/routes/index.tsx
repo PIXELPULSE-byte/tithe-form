@@ -563,6 +563,7 @@ function Index() {
               <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
             )}
             <button type="button" onClick={exportWord} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Word</button>
+            <button type="button" onClick={exportExcel} style={styles.secondaryBtn} disabled={!entries.length}>⤓ Export Excel</button>
             <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
