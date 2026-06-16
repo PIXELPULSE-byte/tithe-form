@@ -96,8 +96,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "icon",
-        type: "image/png",
-        href: cfaLogo.url,
+        type: "image/x-icon",
+        href: faviconIco.url,
       },
     ],
   }),
