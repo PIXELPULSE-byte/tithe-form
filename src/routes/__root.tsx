@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import cfaLogo from "@/assets/cfa-logo.png.asset.json";
 
 function NotFoundComponent() {
   return (
@@ -77,23 +78,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "**Christian Faith Assembly**" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "**Christian Faith Assembly**" },
+      { title: "Christian Faith Assembly - Tithe Registration" },
+      { name: "description", content: "Tithe Registration for Christian Faith Assembly" },
+      { name: "author", content: "Christian Faith Assembly" },
+      { property: "og:title", content: "Christian Faith Assembly - Tithe Registration" },
+      { property: "og:description", content: "Tithe Registration for Christian Faith Assembly" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "**Christian Faith Assembly**" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a0d64707-e8e0-41b4-b0de-115392783149/id-preview-df319ff6--33acae56-4f03-41f6-9155-9a509989e36d.lovable.app-1781107742394.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a0d64707-e8e0-41b4-b0de-115392783149/id-preview-df319ff6--33acae56-4f03-41f6-9155-9a509989e36d.lovable.app-1781107742394.png" },
+      { name: "twitter:title", content: "Christian Faith Assembly - Tithe Registration" },
+      { name: "twitter:description", content: "Tithe Registration for Christian Faith Assembly" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        href: cfaLogo.url,
       },
     ],
   }),
