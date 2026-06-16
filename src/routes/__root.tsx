@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Christian Faith Assembly - Tithe Registration" },
+      { title: "CFA Register" },
       { name: "description", content: "Tithe Registration for Christian Faith Assembly" },
       { name: "author", content: "Christian Faith Assembly" },
       { property: "og:title", content: "Christian Faith Assembly - Tithe Registration" },
