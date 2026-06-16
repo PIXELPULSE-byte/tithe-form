@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
+import faviconIco from "@/assets/favicon.ico.asset.json";
 
 function NotFoundComponent() {
   return (
