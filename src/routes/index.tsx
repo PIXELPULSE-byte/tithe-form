@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
 import cfaText from "@/assets/cfa-text.png.asset.json";
 import bgWallpaper from "@/assets/bg-wallpaper.jpg";
+import windowsBuild from "@/assets/cfa-windows.zip.asset.json";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation, ImageRun,
@@ -641,6 +642,18 @@ function Index() {
           </button>
         </div>
       </div>
+      <a
+        href={windowsBuild.url}
+        download="CFA-Register-Windows.zip"
+        style={styles.winDownload}
+        title="Download CFA Register for Windows 11 (.zip) — unzip and run CFA-Register.exe"
+      >
+        <span style={styles.winIcon} aria-hidden>⊞</span>
+        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.85 }}>Download for</span>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>Windows 11</span>
+        </span>
+      </a>
     </div>
   );
 }
@@ -772,5 +785,27 @@ const styles: Record<string, React.CSSProperties> = {
     background: "white", color: "#0f172a", border: "none",
     padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
     textAlign: "left",
+  },
+  winDownload: {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "12px 18px",
+    background: "linear-gradient(135deg, #0078d4, #005a9e)",
+    color: "white",
+    textDecoration: "none",
+    borderRadius: 12,
+    boxShadow: "0 10px 25px -5px rgba(0, 120, 212, 0.55), 0 4px 10px rgba(0,0,0,0.2)",
+    fontFamily: "'Segoe UI', Tahoma, sans-serif",
+    zIndex: 100,
+    border: "1px solid rgba(255,255,255,0.2)",
+  },
+  winIcon: {
+    fontSize: 24,
+    fontWeight: 900,
+    lineHeight: 1,
   },
 };
