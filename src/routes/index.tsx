@@ -659,15 +659,16 @@ function Index() {
           </div>
 
           <div style={styles.actions}>
-            <button type="submit" style={styles.primaryBtn}>{editingId ? "✓ Update Record" : "＋ Save Record"}</button>
+            <button type="submit" className="btn-glow" style={styles.primaryBtn}>{editingId ? "✓ Update Record" : "＋ Save Record"}</button>
             {editingId && (
-              <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
+              <button type="button" onClick={cancelEdit} className="btn-glow" style={styles.secondaryBtn}>Cancel Edit</button>
             )}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
                 onClick={() => setShowExportMenu((s) => !s)}
                 style={styles.secondaryBtn}
+                className="btn-glow"
                 disabled={!entries.length}
               >
                 ⤓ Exports ▼
