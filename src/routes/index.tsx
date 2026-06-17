@@ -686,18 +686,18 @@ function Index() {
         </form>
 
         <div style={styles.tableHeader}>
-          <h2 style={styles.h2}>Logged Transactions</h2>
+          <h2 style={styles.h2} className="theme-h2">Logged Transactions</h2>
           <div style={styles.tableTools}>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} />
-            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }}>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} className="theme-input" />
+            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }} className="theme-input">
               <option value="ALL">All records</option>
               <option value="OMR">OMR only</option>
             </select>
           </div>
         </div>
 
-        <div style={styles.tableWrap}>
-          <table style={styles.table}>
+        <div style={styles.tableWrap} className="theme-table-wrap">
+          <table style={styles.table} className="theme-table">
             <thead>
               <tr>
                 <th style={styles.th}>Date</th>
@@ -713,7 +713,7 @@ function Index() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={styles.empty}>No records yet — log your first entry above.</td></tr>
+                <tr><td colSpan={9} style={styles.empty} className="theme-empty">No records yet — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
                 <tr key={e.id} style={{ ...styles.row, background: editingId === e.id ? "#fef3c7" : undefined }}>
                   <td style={styles.td}>{e.date}</td>
