@@ -572,7 +572,21 @@ function Index() {
                 type="button"
                 onClick={() => setDarkMode((d) => !d)}
                 className="btn-glow"
-                style={styles.themeToggle}
+                style={{
+                  background: darkMode ? "#f59e0b" : "#4A3F9F",
+                  color: "white",
+                  border: "none",
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  fontSize: 20,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: darkMode ? "0 4px 12px -2px rgba(245,158,11,0.4)" : "0 4px 12px -2px rgba(74,63,159,0.4)",
+                }}
                 title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {darkMode ? "☀" : "☾"}
