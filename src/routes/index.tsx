@@ -627,7 +627,7 @@ function Index() {
               </div>
             </Field>
             <Field label="Category">
-              <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input}>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input} className="theme-input">
                 {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </Field>
@@ -637,23 +637,23 @@ function Index() {
 
           <div style={styles.formGrid}>
             <Field label="Payment Method">
-              <select value={method} onChange={(e) => setMethod(e.target.value)} style={styles.input}>
+              <select value={method} onChange={(e) => setMethod(e.target.value)} style={styles.input} className="theme-input">
                 {METHODS.map((m) => <option key={m}>{m}</option>)}
               </select>
             </Field>
             <Field label="Amount">
-              <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
+              <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} className="theme-input" required />
             </Field>
             <Field label="In Words (auto)">
-              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#E8E4FF", border: "1px solid #6B5BFF", minHeight: 40 }}>
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#E8E4FF", border: "1px solid #6B5BFF", minHeight: 40 }} className="theme-in-words">
                 {amountInWords(parseFloat(amount) || 0) || <span style={{ color: "#94a3b8", fontWeight: 400 }}>e.g. Ten Rials Only</span>}
               </div>
             </Field>
             <Field label="Note (optional)">
-              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} />
+              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} className="theme-input" />
             </Field>
             <Field label="Title">
-              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input}>
+              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
                 {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </Field>
