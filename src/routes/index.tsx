@@ -494,18 +494,91 @@ function Index() {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.headerLeft}>
-            <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
-          </div>
-          <div style={styles.headerCenter}>
-            <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
-            <p style={styles.subtitle}>Tithe Registration</p>
-          </div>
-          <div style={styles.headerRight} />
-        </header>
+    <>
+      <style>{`
+        .btn-glow { transition: all 0.2s ease; }
+        .btn-glow:hover:not(:disabled) {
+          filter: brightness(1.15);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25);
+        }
+        [data-theme="dark"] .theme-container {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-form {
+          background: #334155 !important;
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-input {
+          background: #1e293b !important;
+          border-color: #475569 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-table-wrap {
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-table th {
+          background: #0f172a !important;
+        }
+        [data-theme="dark"] .theme-table td {
+          border-bottom-color: #475569 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-table tr:hover {
+          background: #334155 !important;
+        }
+        [data-theme="dark"] .theme-stat-box {
+          background: #334155 !important;
+        }
+        [data-theme="dark"] .theme-stat-label {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-h2 {
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-empty {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-subtitle {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-label {
+          color: #cbd5e1 !important;
+        }
+        [data-theme="dark"] .theme-phone-prefix {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-in-words {
+          background: #312e81 !important;
+          border-color: #6B5BFF !important;
+          color: #e2e8f0 !important;
+        }
+      `}</style>
+      <div style={styles.page} data-theme={darkMode ? "dark" : "light"}>
+        <div style={styles.container} className="theme-container">
+          <header style={styles.header}>
+            <div style={styles.headerLeft}>
+              <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
+            </div>
+            <div style={styles.headerCenter}>
+              <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
+              <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
+            </div>
+            <div style={styles.headerRight}>
+              <button
+                type="button"
+                onClick={() => setDarkMode((d) => !d)}
+                className="btn-glow"
+                style={styles.themeToggle}
+                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {darkMode ? "☀" : "☾"}
+              </button>
+            </div>
+          </header>
 
         <section style={styles.dashboard}>
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
