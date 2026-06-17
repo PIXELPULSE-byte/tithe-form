@@ -122,6 +122,8 @@ function Index() {
 
   const isDark = darkMode;
 
+  const phoneDigits = 8;
+
   // Persist to localStorage on every change
   useEffect(() => {
     try {
