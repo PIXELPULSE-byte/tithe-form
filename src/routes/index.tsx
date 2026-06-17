@@ -109,7 +109,18 @@ function Index() {
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("cfa-theme") === "dark";
+  });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cfa-theme", darkMode ? "dark" : "light");
+    }
+  }, [darkMode]);
+
+  const isDark = darkMode;
 
   const phoneDigits = 8;
 
@@ -483,35 +494,122 @@ function Index() {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <div style={styles.headerLeft}>
-            <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
-          </div>
-          <div style={styles.headerCenter}>
-            <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
-            <p style={styles.subtitle}>Tithe Registration</p>
-          </div>
-          <div style={styles.headerRight} />
-        </header>
+    <>
+      <style>{`
+        .btn-glow { transition: all 0.2s ease; }
+        .btn-glow:hover:not(:disabled) {
+          filter: brightness(1.15);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25);
+        }
+        [data-theme="dark"] .theme-container {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-form {
+          background: #334155 !important;
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-input {
+          background: #1e293b !important;
+          border-color: #475569 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-table-wrap {
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-table th {
+          background: #0f172a !important;
+        }
+        [data-theme="dark"] .theme-table td {
+          border-bottom-color: #475569 !important;
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-table tr:hover {
+          background: #334155 !important;
+        }
+        [data-theme="dark"] .theme-stat-box {
+          background: #334155 !important;
+        }
+        [data-theme="dark"] .theme-stat-label {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-h2 {
+          color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-empty {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-subtitle {
+          color: #94a3b8 !important;
+        }
+        [data-theme="dark"] .theme-label {
+          color: #cbd5e1 !important;
+        }
+        [data-theme="dark"] .theme-phone-prefix {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+          border-color: #475569 !important;
+        }
+        [data-theme="dark"] .theme-in-words {
+          background: #312e81 !important;
+          border-color: #6B5BFF !important;
+          color: #e2e8f0 !important;
+        }
+      `}</style>
+      <div style={styles.page} data-theme={darkMode ? "dark" : "light"}>
+        <div style={styles.container} className="theme-container">
+          <header style={styles.header}>
+            <div style={styles.headerLeft}>
+              <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
+            </div>
+            <div style={styles.headerCenter}>
+              <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
+              <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
+            </div>
+            <div style={styles.headerRight}>
+              <button
+                type="button"
+                onClick={() => setDarkMode((d) => !d)}
+                className="btn-glow"
+                style={{
+                  background: darkMode ? "#f59e0b" : "#4A3F9F",
+                  color: "white",
+                  border: "none",
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  fontSize: 20,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: darkMode ? "0 4px 12px -2px rgba(245,158,11,0.4)" : "0 4px 12px -2px rgba(74,63,159,0.4)",
+                }}
+                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {darkMode ? "☀" : "☾"}
+              </button>
+            </div>
+          </header>
 
         <section style={styles.dashboard}>
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
           <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
         </section>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form} className="theme-form">
           <div style={styles.formGrid}>
             <Field label="Date">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} required />
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} className="theme-input" required />
             </Field>
             <Field label="Person's Name">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} required />
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} className="theme-input" required />
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }}>
+                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">
                   +968
                 </div>
                 <input
@@ -523,12 +621,13 @@ function Index() {
                   }}
                   placeholder={`${phoneDigits} digits`}
                   style={styles.input}
+                  className="theme-input"
                   required
                 />
               </div>
             </Field>
             <Field label="Category">
-              <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input}>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} style={styles.input} className="theme-input">
                 {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </Field>
@@ -538,66 +637,67 @@ function Index() {
 
           <div style={styles.formGrid}>
             <Field label="Payment Method">
-              <select value={method} onChange={(e) => setMethod(e.target.value)} style={styles.input}>
+              <select value={method} onChange={(e) => setMethod(e.target.value)} style={styles.input} className="theme-input">
                 {METHODS.map((m) => <option key={m}>{m}</option>)}
               </select>
             </Field>
             <Field label="Amount">
-              <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
+              <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} className="theme-input" required />
             </Field>
             <Field label="In Words (auto)">
-              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#E8E4FF", border: "1px solid #6B5BFF", minHeight: 40 }}>
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#E8E4FF", border: "1px solid #6B5BFF", minHeight: 40 }} className="theme-in-words">
                 {amountInWords(parseFloat(amount) || 0) || <span style={{ color: "#94a3b8", fontWeight: 400 }}>e.g. Ten Rials Only</span>}
               </div>
             </Field>
             <Field label="Note (optional)">
-              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} />
+              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} className="theme-input" />
             </Field>
             <Field label="Title">
-              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input}>
+              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
                 {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </Field>
           </div>
 
           <div style={styles.actions}>
-            <button type="submit" style={styles.primaryBtn}>{editingId ? "✓ Update Record" : "＋ Save Record"}</button>
+            <button type="submit" className="btn-glow" style={styles.primaryBtn}>{editingId ? "✓ Update Record" : "＋ Save Record"}</button>
             {editingId && (
-              <button type="button" onClick={cancelEdit} style={styles.secondaryBtn}>Cancel Edit</button>
+              <button type="button" onClick={cancelEdit} className="btn-glow" style={styles.secondaryBtn}>Cancel Edit</button>
             )}
             <div style={{ position: "relative" }}>
               <button
                 type="button"
                 onClick={() => setShowExportMenu((s) => !s)}
                 style={styles.secondaryBtn}
+                className="btn-glow"
                 disabled={!entries.length}
               >
                 ⤓ Exports ▼
               </button>
               {showExportMenu && (
                 <div style={styles.dropdown}>
-                  <button type="button" onClick={() => { setShowExportMenu(false); exportWord(); }} style={styles.dropdownItem}>WORD</button>
-                  <button type="button" onClick={() => { setShowExportMenu(false); exportExcel(); }} style={styles.dropdownItem}>EXCEL</button>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportWord(); }} className="btn-glow" style={styles.dropdownItem}>WORD</button>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportExcel(); }} className="btn-glow" style={styles.dropdownItem}>EXCEL</button>
                 </div>
               )}
             </div>
-            <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
+            <button type="button" onClick={deleteAllEntries} className="btn-glow" style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
 
         <div style={styles.tableHeader}>
-          <h2 style={styles.h2}>Logged Transactions</h2>
+          <h2 style={styles.h2} className="theme-h2">Logged Transactions</h2>
           <div style={styles.tableTools}>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} />
-            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }}>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, category…" style={{ ...styles.input, width: 240 }} className="theme-input" />
+            <select value={filterCurrency} onChange={(e) => setFilterCurrency(e.target.value as "ALL" | "OMR")} style={{ ...styles.input, width: 140 }} className="theme-input">
               <option value="ALL">All records</option>
               <option value="OMR">OMR only</option>
             </select>
           </div>
         </div>
 
-        <div style={styles.tableWrap}>
-          <table style={styles.table}>
+        <div style={styles.tableWrap} className="theme-table-wrap">
+          <table style={styles.table} className="theme-table">
             <thead>
               <tr>
                 <th style={styles.th}>Date</th>
@@ -613,7 +713,7 @@ function Index() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={styles.empty}>No records yet — log your first entry above.</td></tr>
+                <tr><td colSpan={9} style={styles.empty} className="theme-empty">No records yet — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
                 <tr key={e.id} style={{ ...styles.row, background: editingId === e.id ? "#fef3c7" : undefined }}>
                   <td style={styles.td}>{e.date}</td>
@@ -626,8 +726,8 @@ function Index() {
                   <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.amount)}</td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => startEdit(e)} style={styles.editBtn} aria-label="Edit">✎</button>
-                      <button onClick={() => deleteEntry(e.id)} style={styles.deleteBtn} aria-label="Delete">✕</button>
+                      <button onClick={() => startEdit(e)} className="btn-glow" style={styles.editBtn} aria-label="Edit">✎</button>
+                      <button onClick={() => deleteEntry(e.id)} className="btn-glow" style={styles.deleteBtn} aria-label="Delete">✕</button>
                     </div>
                   </td>
                 </tr>
@@ -637,7 +737,7 @@ function Index() {
         </div>
 
         <div style={styles.bottomBar}>
-          <button type="button" onClick={deleteAllEntriesWithDoubleConfirm} style={styles.dangerBtn} disabled={!entries.length}>
+          <button type="button" onClick={deleteAllEntriesWithDoubleConfirm} className="btn-glow" style={styles.dangerBtn} disabled={!entries.length}>
             🗑 Delete All Records
           </button>
         </div>
@@ -645,6 +745,7 @@ function Index() {
       <a
         href={windowsBuild.url}
         download="CFA-Register-Windows.zip"
+        className="btn-glow"
         style={styles.winDownload}
         title="Download CFA Register for Windows 11 (.zip) — unzip and run CFA-Register.exe"
       >
@@ -655,13 +756,14 @@ function Index() {
         </span>
       </a>
     </div>
+    </>
   );
 }
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <div style={{ ...styles.statBox, borderTop: `4px solid ${accent}` }}>
-      <div style={styles.statLabel}>{label}</div>
+    <div style={{ ...styles.statBox, borderTop: `4px solid ${accent}` }} className="theme-stat-box">
+      <div style={styles.statLabel} className="theme-stat-label">{label}</div>
       <div style={{ ...styles.statValue, color: accent }}>{value}</div>
     </div>
   );
@@ -670,7 +772,7 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={styles.label}>{label}</label>
+      <label style={styles.label} className="theme-label">{label}</label>
       {children}
     </div>
   );
@@ -706,7 +808,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   headerLeft: { display: "flex", alignItems: "center" },
   headerCenter: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
-  headerRight: {},
+  headerRight: { display: "flex", alignItems: "center", justifyContent: "flex-end" },
   logoImg: { width: 100, height: "auto", objectFit: "contain" },
   textImg: { width: 520, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
