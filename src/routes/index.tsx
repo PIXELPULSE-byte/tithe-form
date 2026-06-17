@@ -609,7 +609,7 @@ function Index() {
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }}>
+                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">
                   +968
                 </div>
                 <input
@@ -621,6 +621,7 @@ function Index() {
                   }}
                   placeholder={`${phoneDigits} digits`}
                   style={styles.input}
+                  className="theme-input"
                   required
                 />
               </div>
