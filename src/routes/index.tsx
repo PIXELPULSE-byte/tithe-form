@@ -724,7 +724,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   formGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 },
   thickDivider: {
-    height: 3, background: "linear-gradient(90deg, transparent, #6366f1, transparent)",
+    height: 3, background: "linear-gradient(90deg, transparent, #6B5BFF, transparent)",
     margin: "20px 0", borderRadius: 2,
   },
   label: { fontSize: 12, fontWeight: 700, color: "#475569", letterSpacing: "0.04em", textTransform: "uppercase" },
