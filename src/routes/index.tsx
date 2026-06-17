@@ -764,14 +764,14 @@ const styles: Record<string, React.CSSProperties> = {
   row: { transition: "background 0.15s" },
   pill: {
     display: "inline-block", padding: "3px 10px", borderRadius: 999,
-    background: "#ede9fe", color: "#6d28d9", fontSize: 12, fontWeight: 600,
+    background: "#E8E4FF", color: "#4A3F9F", fontSize: 12, fontWeight: 600,
   },
   deleteBtn: {
-    background: "#fee2e2", color: "#dc2626", border: "none",
+    background: "#F06B6B", color: "white", border: "none",
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   editBtn: {
-    background: "#dbeafe", color: "#1d4ed8", border: "none",
+    background: "#6B5BFF", color: "white", border: "none",
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   empty: { padding: 36, textAlign: "center", color: "#94a3b8", fontStyle: "italic" },
