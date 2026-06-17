@@ -761,8 +761,8 @@ function Index() {
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
   return (
-    <div style={{ ...styles.statBox, borderTop: `4px solid ${accent}` }}>
-      <div style={styles.statLabel}>{label}</div>
+    <div style={{ ...styles.statBox, borderTop: `4px solid ${accent}` }} className="theme-stat-box">
+      <div style={styles.statLabel} className="theme-stat-label">{label}</div>
       <div style={{ ...styles.statValue, color: accent }}>{value}</div>
     </div>
   );
