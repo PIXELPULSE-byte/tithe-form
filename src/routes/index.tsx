@@ -675,12 +675,12 @@ function Index() {
               </button>
               {showExportMenu && (
                 <div style={styles.dropdown}>
-                  <button type="button" onClick={() => { setShowExportMenu(false); exportWord(); }} style={styles.dropdownItem}>WORD</button>
-                  <button type="button" onClick={() => { setShowExportMenu(false); exportExcel(); }} style={styles.dropdownItem}>EXCEL</button>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportWord(); }} className="btn-glow" style={styles.dropdownItem}>WORD</button>
+                  <button type="button" onClick={() => { setShowExportMenu(false); exportExcel(); }} className="btn-glow" style={styles.dropdownItem}>EXCEL</button>
                 </div>
               )}
             </div>
-            <button type="button" onClick={deleteAllEntries} style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
+            <button type="button" onClick={deleteAllEntries} className="btn-glow" style={styles.dangerBtn} disabled={!entries.length}>🗑 Delete All</button>
           </div>
         </form>
 
