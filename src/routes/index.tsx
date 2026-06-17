@@ -771,7 +771,7 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={styles.label}>{label}</label>
+      <label style={styles.label} className="theme-label">{label}</label>
       {children}
     </div>
   );
