@@ -783,7 +783,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: "hidden",
   },
   dropdownItem: {
-    background: "white", color: "#0f172a", border: "none",
+    background: "#6B9EFF", color: "white", border: "none",
     padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
     textAlign: "left",
   },
