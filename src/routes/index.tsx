@@ -497,8 +497,8 @@ function Index() {
         </header>
 
         <section style={styles.dashboard}>
-          <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#0ea5e9" />
-          <StatCard label="Total Entries" value={String(totals.count)} accent="#6366f1" />
+          <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
+          <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
         </section>
 
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -546,7 +546,7 @@ function Index() {
               <input type="number" min="0.001" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" style={styles.input} required />
             </Field>
             <Field label="In Words (auto)">
-              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#ecfdf5", border: "1px solid #6ee7b7", minHeight: 40 }}>
+              <div style={{ ...styles.input, display: "flex", alignItems: "center", fontWeight: 600, color: "#0f172a", background: "#E8E4FF", border: "1px solid #6B5BFF", minHeight: 40 }}>
                 {amountInWords(parseFloat(amount) || 0) || <span style={{ color: "#94a3b8", fontWeight: 400 }}>e.g. Ten Rials Only</span>}
               </div>
             </Field>
@@ -724,7 +724,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   formGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 },
   thickDivider: {
-    height: 3, background: "linear-gradient(90deg, transparent, #6366f1, transparent)",
+    height: 3, background: "linear-gradient(90deg, transparent, #6B5BFF, transparent)",
     margin: "20px 0", borderRadius: 2,
   },
   label: { fontSize: 12, fontWeight: 700, color: "#475569", letterSpacing: "0.04em", textTransform: "uppercase" },
@@ -735,18 +735,19 @@ const styles: Record<string, React.CSSProperties> = {
   },
   actions: { display: "flex", gap: 12, marginTop: 20, justifyContent: "flex-end" },
   primaryBtn: {
-    background: "linear-gradient(135deg, #10b981, #059669)", color: "white",
+    background: "#6B9EFF", color: "white",
     border: "none", padding: "12px 24px", borderRadius: 8, fontWeight: 700,
-    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px #10b981",
+    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px rgba(107,158,255,0.55)",
   },
   secondaryBtn: {
-    background: "white", color: "#0f172a", border: "1px solid #cbd5e1",
+    background: "#4A3F9F", color: "white", border: "none",
     padding: "12px 20px", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: 14,
+    boxShadow: "0 6px 14px -4px rgba(74,63,159,0.45)",
   },
   dangerBtn: {
-    background: "linear-gradient(135deg, #ef4444, #b91c1c)", color: "white",
+    background: "#F06B6B", color: "white",
     border: "none", padding: "12px 20px", borderRadius: 8, fontWeight: 700,
-    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px #ef4444",
+    cursor: "pointer", fontSize: 14, boxShadow: "0 6px 14px -4px rgba(240,107,107,0.45)",
   },
   bottomBar: { display: "flex", justifyContent: "center", marginTop: 24 },
   tableHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12, flexWrap: "wrap" },
@@ -759,18 +760,18 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "12px 14px", fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em",
   },
   td: { padding: "12px 14px", borderBottom: "1px solid #e2e8f0" },
-  splitCol: { borderRight: "3px solid #6366f1" },
+  splitCol: { borderRight: "3px solid #6B5BFF" },
   row: { transition: "background 0.15s" },
   pill: {
     display: "inline-block", padding: "3px 10px", borderRadius: 999,
-    background: "#ede9fe", color: "#6d28d9", fontSize: 12, fontWeight: 600,
+    background: "#E8E4FF", color: "#4A3F9F", fontSize: 12, fontWeight: 600,
   },
   deleteBtn: {
-    background: "#fee2e2", color: "#dc2626", border: "none",
+    background: "#F06B6B", color: "white", border: "none",
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   editBtn: {
-    background: "#dbeafe", color: "#1d4ed8", border: "none",
+    background: "#6B5BFF", color: "white", border: "none",
     width: 30, height: 30, borderRadius: 8, cursor: "pointer", fontWeight: 700,
   },
   empty: { padding: 36, textAlign: "center", color: "#94a3b8", fontStyle: "italic" },
@@ -782,7 +783,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: "hidden",
   },
   dropdownItem: {
-    background: "white", color: "#0f172a", border: "none",
+    background: "#6B9EFF", color: "white", border: "none",
     padding: "12px 16px", fontWeight: 600, cursor: "pointer", fontSize: 14,
     textAlign: "left",
   },
@@ -794,11 +795,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: 10,
     padding: "12px 18px",
-    background: "linear-gradient(135deg, #0078d4, #005a9e)",
+    background: "#4A3F9F",
     color: "white",
     textDecoration: "none",
     borderRadius: 12,
-    boxShadow: "0 10px 25px -5px rgba(0, 120, 212, 0.55), 0 4px 10px rgba(0,0,0,0.2)",
+    boxShadow: "0 10px 25px -5px rgba(74, 63, 159, 0.55), 0 4px 10px rgba(0,0,0,0.2)",
     fontFamily: "'Segoe UI', Tahoma, sans-serif",
     zIndex: 100,
     border: "1px solid rgba(255,255,255,0.2)",
