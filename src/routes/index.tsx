@@ -725,8 +725,8 @@ function Index() {
                   <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.amount)}</td>
                   <td style={styles.td}>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={() => startEdit(e)} style={styles.editBtn} aria-label="Edit">✎</button>
-                      <button onClick={() => deleteEntry(e.id)} style={styles.deleteBtn} aria-label="Delete">✕</button>
+                      <button onClick={() => startEdit(e)} className="btn-glow" style={styles.editBtn} aria-label="Edit">✎</button>
+                      <button onClick={() => deleteEntry(e.id)} className="btn-glow" style={styles.deleteBtn} aria-label="Delete">✕</button>
                     </div>
                   </td>
                 </tr>
@@ -736,7 +736,7 @@ function Index() {
         </div>
 
         <div style={styles.bottomBar}>
-          <button type="button" onClick={deleteAllEntriesWithDoubleConfirm} style={styles.dangerBtn} disabled={!entries.length}>
+          <button type="button" onClick={deleteAllEntriesWithDoubleConfirm} className="btn-glow" style={styles.dangerBtn} disabled={!entries.length}>
             🗑 Delete All Records
           </button>
         </div>
