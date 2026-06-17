@@ -760,7 +760,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "12px 14px", fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.05em",
   },
   td: { padding: "12px 14px", borderBottom: "1px solid #e2e8f0" },
-  splitCol: { borderRight: "3px solid #6366f1" },
+  splitCol: { borderRight: "3px solid #6B5BFF" },
   row: { transition: "background 0.15s" },
   pill: {
     display: "inline-block", padding: "3px 10px", borderRadius: 999,
