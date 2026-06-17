@@ -602,10 +602,10 @@ function Index() {
         <form onSubmit={handleSubmit} style={styles.form} className="theme-form">
           <div style={styles.formGrid}>
             <Field label="Date">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} required />
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} className="theme-input" required />
             </Field>
             <Field label="Person's Name">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} required />
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} className="theme-input" required />
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
