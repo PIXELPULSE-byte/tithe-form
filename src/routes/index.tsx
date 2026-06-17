@@ -599,7 +599,7 @@ function Index() {
           <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
         </section>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form} className="theme-form">
           <div style={styles.formGrid}>
             <Field label="Date">
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} required />
