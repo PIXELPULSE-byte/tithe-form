@@ -745,6 +745,7 @@ function Index() {
       <a
         href={windowsBuild.url}
         download="CFA-Register-Windows.zip"
+        className="btn-glow"
         style={styles.winDownload}
         title="Download CFA Register for Windows 11 (.zip) — unzip and run CFA-Register.exe"
       >
