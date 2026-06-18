@@ -575,11 +575,22 @@ function Index() {
         <div style={styles.container} className="theme-container">
           <header style={styles.header}>
             <div style={styles.headerLeft}>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="btn-glow"
+                aria-label="Open menu"
+                style={styles.hamburgerBtn}
+              >
+                <span style={styles.hamburgerBar} />
+                <span style={styles.hamburgerBar} />
+                <span style={styles.hamburgerBar} />
+              </button>
               <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} className="theme-logo-img" />
             </div>
             <div style={styles.headerCenter}>
               <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} className="theme-text-img" />
-              <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
+              <p style={styles.subtitle} className="theme-subtitle">{view === "tithe" ? "Tithe Registration" : "Info of People"}</p>
             </div>
             <div style={styles.headerRight}>
               <button
