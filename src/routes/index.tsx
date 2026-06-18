@@ -565,9 +565,6 @@ function Index() {
         [data-theme="dark"] .theme-subtitle {
           color: #ffffff !important;
         }
-        [data-theme="dark"] .theme-branch {
-          color: #ffffff !important;
-        }
       `}</style>
       <div style={styles.page} data-theme={darkMode ? "dark" : "light"}>
         <div style={styles.container} className="theme-container">
