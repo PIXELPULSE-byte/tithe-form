@@ -556,16 +556,29 @@ function Index() {
           border-color: #6B5BFF !important;
           color: #e2e8f0 !important;
         }
+        [data-theme="dark"] .theme-logo-img {
+          filter: brightness(0) invert(1);
+        }
+        [data-theme="dark"] .theme-text-img {
+          filter: brightness(0) invert(1);
+        }
+        [data-theme="dark"] .theme-subtitle {
+          color: #ffffff !important;
+        }
+        [data-theme="dark"] .theme-branch {
+          color: #ffffff !important;
+        }
       `}</style>
       <div style={styles.page} data-theme={darkMode ? "dark" : "light"}>
         <div style={styles.container} className="theme-container">
           <header style={styles.header}>
             <div style={styles.headerLeft}>
-              <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} />
+              <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} className="theme-logo-img" />
             </div>
             <div style={styles.headerCenter}>
-              <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} />
+              <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} className="theme-text-img" />
               <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
+              <p style={styles.branch} className="theme-branch">Mabela-Branch</p>
             </div>
             <div style={styles.headerRight}>
               <button
@@ -812,7 +825,8 @@ const styles: Record<string, React.CSSProperties> = {
   logoImg: { width: 100, height: "auto", objectFit: "contain" },
   textImg: { width: 520, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
-  subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" },
+  subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#0f172a", letterSpacing: "0.1em", textTransform: "uppercase" },
+  branch: { margin: "4px 0 0", fontSize: 12, fontWeight: 700, color: "#0f172a", letterSpacing: "0.08em", textTransform: "uppercase" },
   dashboard: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 },
   statBox: {
     background: "#f8fafc", borderRadius: 12, padding: "18px 20px",
