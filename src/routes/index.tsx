@@ -578,7 +578,6 @@ function Index() {
             <div style={styles.headerCenter}>
               <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} className="theme-text-img" />
               <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
-              <p style={styles.branch} className="theme-branch">Mabela-Branch</p>
             </div>
             <div style={styles.headerRight}>
               <button
