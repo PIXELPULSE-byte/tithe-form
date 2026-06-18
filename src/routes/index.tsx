@@ -619,6 +619,38 @@ function Index() {
             </div>
           </header>
 
+        {sidebarOpen && (
+          <>
+            <div style={styles.sidebarBackdrop} onClick={() => setSidebarOpen(false)} />
+            <aside style={styles.sidebar} className="theme-container">
+              <div style={styles.sidebarHeader}>
+                <span style={{ fontWeight: 800, fontSize: 16 }}>Menu</span>
+                <button type="button" onClick={() => setSidebarOpen(false)} style={styles.sidebarClose} aria-label="Close">✕</button>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setView("tithe"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "tithe" ? styles.sidebarItemActive : {}) }}
+              >
+                💰 Tithe Registration
+              </button>
+              <button
+                type="button"
+                onClick={() => { setView("info"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "info" ? styles.sidebarItemActive : {}) }}
+              >
+                👥 Info of People
+              </button>
+            </aside>
+          </>
+        )}
+
+        {view === "info" ? (
+          <InfoOfPeople />
+        ) : (
+        <>
         <section style={styles.dashboard}>
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
           <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
