@@ -825,7 +825,8 @@ const styles: Record<string, React.CSSProperties> = {
   logoImg: { width: 100, height: "auto", objectFit: "contain" },
   textImg: { width: 520, height: "auto", objectFit: "contain", maxWidth: "100%" },
   h1: { margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: "-0.02em", color: "#0f172a" },
-  subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" },
+  subtitle: { margin: "6px 0 0", fontSize: 13, fontWeight: 700, color: "#0f172a", letterSpacing: "0.1em", textTransform: "uppercase" },
+  branch: { margin: "4px 0 0", fontSize: 12, fontWeight: 700, color: "#0f172a", letterSpacing: "0.08em", textTransform: "uppercase" },
   dashboard: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 },
   statBox: {
     background: "#f8fafc", borderRadius: 12, padding: "18px 20px",
