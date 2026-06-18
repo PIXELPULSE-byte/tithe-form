@@ -1128,4 +1128,36 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 900,
     lineHeight: 1,
   },
+  hamburgerBtn: {
+    width: 40, height: 40, borderRadius: 10, border: "1px solid #cbd5e1",
+    background: "#ffffff", cursor: "pointer", display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", gap: 4, padding: 0, marginRight: 10,
+  },
+  hamburgerBar: { display: "block", width: 18, height: 2, background: "#0f172a", borderRadius: 2 },
+  sidebarBackdrop: {
+    position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)",
+    zIndex: 200, backdropFilter: "blur(2px)",
+  },
+  sidebar: {
+    position: "fixed", top: 0, left: 0, height: "100vh", width: 280,
+    background: "#ffffff", boxShadow: "4px 0 25px -5px rgba(0,0,0,0.3)",
+    zIndex: 201, padding: 20, display: "flex", flexDirection: "column", gap: 10,
+  },
+  sidebarHeader: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    paddingBottom: 12, marginBottom: 8, borderBottom: "1px solid #e2e8f0",
+  },
+  sidebarClose: {
+    background: "transparent", border: "none", fontSize: 18, cursor: "pointer",
+    color: "#64748b", padding: 4,
+  },
+  sidebarItem: {
+    background: "#f1f5f9", color: "#0f172a", border: "1px solid transparent",
+    padding: "12px 14px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+    cursor: "pointer", textAlign: "left",
+  },
+  sidebarItemActive: {
+    background: "linear-gradient(135deg, #6B9EFF, #4A3F9F)", color: "white",
+    boxShadow: "0 4px 12px -2px rgba(74,63,159,0.4)",
+  },
 };
