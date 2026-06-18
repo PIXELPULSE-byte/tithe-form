@@ -798,6 +798,8 @@ function Index() {
             🗑 Delete All Records
           </button>
         </div>
+        </>
+        )}
       </div>
       <a
         href={windowsBuild.url}
