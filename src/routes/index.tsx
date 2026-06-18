@@ -109,10 +109,15 @@ function Index() {
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("cfa-theme") === "dark";
-  });
+  const [darkMode, setDarkMode] = useState(false);
+  const [view, setView] = useState<"tithe" | "info">("tithe");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Hydrate theme after mount to avoid SSR/CSR mismatch
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setDarkMode(localStorage.getItem("cfa-theme") === "dark");
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
