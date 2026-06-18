@@ -837,6 +837,164 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+type Person = {
+  id: string;
+  name: string;
+  countryCode: "+968";
+  phone: string;
+  bornYear: string;
+  title: "Brother" | "Sister";
+};
+
+const PEOPLE_KEY = "cfa-people-v1";
+
+function InfoOfPeople() {
+  const [people, setPeople] = useState<Person[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bornYear, setBornYear] = useState("");
+  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PEOPLE_KEY);
+      if (raw) setPeople(JSON.parse(raw) as Person[]);
+    } catch {/* ignore */}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try { localStorage.setItem(PEOPLE_KEY, JSON.stringify(people)); } catch {/* ignore */}
+  }, [people, hydrated]);
+
+  const currentYear = new Date().getFullYear();
+
+  function reset() {
+    setName(""); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    if (phone.length !== 8) { window.alert("Phone number must be exactly 8 digits for +968."); return; }
+    const yr = parseInt(bornYear, 10);
+    if (!yr || yr < 1900 || yr > currentYear) { window.alert(`Born year must be between 1900 and ${currentYear}.`); return; }
+    if (editingId) {
+      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), phone, bornYear: String(yr), title, countryCode: "+968" } : p));
+    } else {
+      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode: "+968", phone, bornYear: String(yr), title }, ...prev]);
+    }
+    reset();
+  }
+
+  function startEdit(p: Person) {
+    setEditingId(p.id);
+    setName(p.name); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function deletePerson(id: string) {
+    setPeople((prev) => prev.filter((p) => p.id !== id));
+    if (editingId === id) reset();
+  }
+
+  const filtered = people.filter((p) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return p.name.toLowerCase().includes(q) || p.phone.includes(q) || p.bornYear.includes(q);
+  });
+
+  return (
+    <>
+      <section style={styles.dashboard}>
+        <StatCard label="Total Brothers" value={String(people.filter(p => p.title === "Brother").length)} accent="#10b981" />
+        <StatCard label="Total Sisters" value={String(people.filter(p => p.title === "Sister").length)} accent="#ec4899" />
+      </section>
+
+      <form onSubmit={handleSubmit} style={{ ...styles.form, borderLeft: "6px solid #10b981" }} className="theme-form">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+          <Field label="Person's Name">
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} className="theme-input" required />
+          </Field>
+          <Field label="Phone Number">
+            <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">+968</div>
+              <input type="tel" value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                placeholder="8 digits" style={styles.input} className="theme-input" required />
+            </div>
+          </Field>
+          <Field label="Born Year">
+            <input type="number" min="1900" max={currentYear} value={bornYear}
+              onChange={(e) => setBornYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              placeholder="e.g. 1995" style={styles.input} className="theme-input" required />
+          </Field>
+          <Field label="Title">
+            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>
+            </select>
+          </Field>
+        </div>
+
+        <div style={styles.actions}>
+          <button type="submit" className="btn-glow" style={{ ...styles.primaryBtn, background: "#10b981", boxShadow: "0 6px 14px -4px rgba(16,185,129,0.55)" }}>
+            {editingId ? "✓ Update Person" : "＋ Save Record"}
+          </button>
+          {editingId && (
+            <button type="button" onClick={reset} className="btn-glow" style={styles.secondaryBtn}>Cancel Edit</button>
+          )}
+        </div>
+      </form>
+
+      <div style={styles.tableHeader}>
+        <h2 style={styles.h2} className="theme-h2">Logged Info</h2>
+        <div style={styles.tableTools}>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, year…" style={{ ...styles.input, width: 240 }} className="theme-input" />
+        </div>
+      </div>
+
+      <div style={styles.tableWrap} className="theme-table-wrap">
+        <table style={styles.table} className="theme-table">
+          <thead>
+            <tr>
+              <th style={styles.th}>Title</th>
+              <th style={styles.th}>Name</th>
+              <th style={styles.th}>Phone</th>
+              <th style={styles.th}>Born Year</th>
+              <th style={styles.th}>Age</th>
+              <th style={styles.th}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr><td colSpan={6} style={styles.empty} className="theme-empty">No people added yet — log your first person above.</td></tr>
+            ) : filtered.map((p) => (
+              <tr key={p.id} style={{ ...styles.row, background: editingId === p.id ? "#d1fae5" : undefined }}>
+                <td style={styles.td}>{p.title}</td>
+                <td style={{ ...styles.td, fontWeight: 600 }}>{p.name}</td>
+                <td style={styles.td}>{p.countryCode} {p.phone}</td>
+                <td style={styles.td}>{p.bornYear}</td>
+                <td style={{ ...styles.td, fontWeight: 700, color: "#10b981" }}>{currentYear - parseInt(p.bornYear, 10)}</td>
+                <td style={styles.td}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => startEdit(p)} className="btn-glow" style={{ ...styles.editBtn, background: "#10b981" }} aria-label="Edit">✎</button>
+                    <button onClick={() => deletePerson(p.id)} className="btn-glow" style={styles.deleteBtn} aria-label="Delete">✕</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
