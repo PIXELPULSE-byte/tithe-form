@@ -109,10 +109,15 @@ function Index() {
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("cfa-theme") === "dark";
-  });
+  const [darkMode, setDarkMode] = useState(false);
+  const [view, setView] = useState<"tithe" | "info">("tithe");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Hydrate theme after mount to avoid SSR/CSR mismatch
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setDarkMode(localStorage.getItem("cfa-theme") === "dark");
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -570,11 +575,22 @@ function Index() {
         <div style={styles.container} className="theme-container">
           <header style={styles.header}>
             <div style={styles.headerLeft}>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="btn-glow"
+                aria-label="Open menu"
+                style={styles.hamburgerBtn}
+              >
+                <span style={styles.hamburgerBar} />
+                <span style={styles.hamburgerBar} />
+                <span style={styles.hamburgerBar} />
+              </button>
               <img src={cfaLogo.url} alt="CFA Logo" style={styles.logoImg} className="theme-logo-img" />
             </div>
             <div style={styles.headerCenter}>
               <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} className="theme-text-img" />
-              <p style={styles.subtitle} className="theme-subtitle">Tithe Registration</p>
+              <p style={styles.subtitle} className="theme-subtitle">{view === "tithe" ? "Tithe Registration" : "Info of People"}</p>
             </div>
             <div style={styles.headerRight}>
               <button
@@ -603,6 +619,38 @@ function Index() {
             </div>
           </header>
 
+        {sidebarOpen && (
+          <>
+            <div style={styles.sidebarBackdrop} onClick={() => setSidebarOpen(false)} />
+            <aside style={styles.sidebar} className="theme-container">
+              <div style={styles.sidebarHeader}>
+                <span style={{ fontWeight: 800, fontSize: 16 }}>Menu</span>
+                <button type="button" onClick={() => setSidebarOpen(false)} style={styles.sidebarClose} aria-label="Close">✕</button>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setView("tithe"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "tithe" ? styles.sidebarItemActive : {}) }}
+              >
+                💰 Tithe Registration
+              </button>
+              <button
+                type="button"
+                onClick={() => { setView("info"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "info" ? styles.sidebarItemActive : {}) }}
+              >
+                👥 Info of People
+              </button>
+            </aside>
+          </>
+        )}
+
+        {view === "info" ? (
+          <InfoOfPeople />
+        ) : (
+        <>
         <section style={styles.dashboard}>
           <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
           <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
@@ -750,6 +798,8 @@ function Index() {
             🗑 Delete All Records
           </button>
         </div>
+        </>
+        )}
       </div>
       <a
         href={windowsBuild.url}
@@ -784,6 +834,164 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label style={styles.label} className="theme-label">{label}</label>
       {children}
     </div>
+  );
+}
+
+type Person = {
+  id: string;
+  name: string;
+  countryCode: "+968";
+  phone: string;
+  bornYear: string;
+  title: "Brother" | "Sister";
+};
+
+const PEOPLE_KEY = "cfa-people-v1";
+
+function InfoOfPeople() {
+  const [people, setPeople] = useState<Person[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bornYear, setBornYear] = useState("");
+  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PEOPLE_KEY);
+      if (raw) setPeople(JSON.parse(raw) as Person[]);
+    } catch {/* ignore */}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try { localStorage.setItem(PEOPLE_KEY, JSON.stringify(people)); } catch {/* ignore */}
+  }, [people, hydrated]);
+
+  const currentYear = new Date().getFullYear();
+
+  function reset() {
+    setName(""); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    if (phone.length !== 8) { window.alert("Phone number must be exactly 8 digits for +968."); return; }
+    const yr = parseInt(bornYear, 10);
+    if (!yr || yr < 1900 || yr > currentYear) { window.alert(`Born year must be between 1900 and ${currentYear}.`); return; }
+    if (editingId) {
+      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), phone, bornYear: String(yr), title, countryCode: "+968" } : p));
+    } else {
+      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode: "+968", phone, bornYear: String(yr), title }, ...prev]);
+    }
+    reset();
+  }
+
+  function startEdit(p: Person) {
+    setEditingId(p.id);
+    setName(p.name); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function deletePerson(id: string) {
+    setPeople((prev) => prev.filter((p) => p.id !== id));
+    if (editingId === id) reset();
+  }
+
+  const filtered = people.filter((p) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return p.name.toLowerCase().includes(q) || p.phone.includes(q) || p.bornYear.includes(q);
+  });
+
+  return (
+    <>
+      <section style={styles.dashboard}>
+        <StatCard label="Total Brothers" value={String(people.filter(p => p.title === "Brother").length)} accent="#10b981" />
+        <StatCard label="Total Sisters" value={String(people.filter(p => p.title === "Sister").length)} accent="#ec4899" />
+      </section>
+
+      <form onSubmit={handleSubmit} style={{ ...styles.form, borderLeft: "6px solid #10b981" }} className="theme-form">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+          <Field label="Person's Name">
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} className="theme-input" required />
+          </Field>
+          <Field label="Phone Number">
+            <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">+968</div>
+              <input type="tel" value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                placeholder="8 digits" style={styles.input} className="theme-input" required />
+            </div>
+          </Field>
+          <Field label="Born Year">
+            <input type="number" min="1900" max={currentYear} value={bornYear}
+              onChange={(e) => setBornYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              placeholder="e.g. 1995" style={styles.input} className="theme-input" required />
+          </Field>
+          <Field label="Title">
+            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>
+            </select>
+          </Field>
+        </div>
+
+        <div style={styles.actions}>
+          <button type="submit" className="btn-glow" style={{ ...styles.primaryBtn, background: "#10b981", boxShadow: "0 6px 14px -4px rgba(16,185,129,0.55)" }}>
+            {editingId ? "✓ Update Person" : "＋ Save Record"}
+          </button>
+          {editingId && (
+            <button type="button" onClick={reset} className="btn-glow" style={styles.secondaryBtn}>Cancel Edit</button>
+          )}
+        </div>
+      </form>
+
+      <div style={styles.tableHeader}>
+        <h2 style={styles.h2} className="theme-h2">Logged Info</h2>
+        <div style={styles.tableTools}>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, phone, year…" style={{ ...styles.input, width: 240 }} className="theme-input" />
+        </div>
+      </div>
+
+      <div style={styles.tableWrap} className="theme-table-wrap">
+        <table style={styles.table} className="theme-table">
+          <thead>
+            <tr>
+              <th style={styles.th}>Title</th>
+              <th style={styles.th}>Name</th>
+              <th style={styles.th}>Phone</th>
+              <th style={styles.th}>Born Year</th>
+              <th style={styles.th}>Age</th>
+              <th style={styles.th}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr><td colSpan={6} style={styles.empty} className="theme-empty">No people added yet — log your first person above.</td></tr>
+            ) : filtered.map((p) => (
+              <tr key={p.id} style={{ ...styles.row, background: editingId === p.id ? "#d1fae5" : undefined }}>
+                <td style={styles.td}>{p.title}</td>
+                <td style={{ ...styles.td, fontWeight: 600 }}>{p.name}</td>
+                <td style={styles.td}>{p.countryCode} {p.phone}</td>
+                <td style={styles.td}>{p.bornYear}</td>
+                <td style={{ ...styles.td, fontWeight: 700, color: "#10b981" }}>{currentYear - parseInt(p.bornYear, 10)}</td>
+                <td style={styles.td}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => startEdit(p)} className="btn-glow" style={{ ...styles.editBtn, background: "#10b981" }} aria-label="Edit">✎</button>
+                    <button onClick={() => deletePerson(p.id)} className="btn-glow" style={styles.deleteBtn} aria-label="Delete">✕</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -919,5 +1127,37 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 24,
     fontWeight: 900,
     lineHeight: 1,
+  },
+  hamburgerBtn: {
+    width: 40, height: 40, borderRadius: 10, border: "1px solid #cbd5e1",
+    background: "#ffffff", cursor: "pointer", display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", gap: 4, padding: 0, marginRight: 10,
+  },
+  hamburgerBar: { display: "block", width: 18, height: 2, background: "#0f172a", borderRadius: 2 },
+  sidebarBackdrop: {
+    position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)",
+    zIndex: 200, backdropFilter: "blur(2px)",
+  },
+  sidebar: {
+    position: "fixed", top: 0, left: 0, height: "100vh", width: 280,
+    background: "#ffffff", boxShadow: "4px 0 25px -5px rgba(0,0,0,0.3)",
+    zIndex: 201, padding: 20, display: "flex", flexDirection: "column", gap: 10,
+  },
+  sidebarHeader: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    paddingBottom: 12, marginBottom: 8, borderBottom: "1px solid #e2e8f0",
+  },
+  sidebarClose: {
+    background: "transparent", border: "none", fontSize: 18, cursor: "pointer",
+    color: "#64748b", padding: 4,
+  },
+  sidebarItem: {
+    background: "#f1f5f9", color: "#0f172a", border: "1px solid transparent",
+    padding: "12px 14px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+    cursor: "pointer", textAlign: "left",
+  },
+  sidebarItemActive: {
+    background: "linear-gradient(135deg, #6B9EFF, #4A3F9F)", color: "white",
+    boxShadow: "0 4px 12px -2px rgba(74,63,159,0.4)",
   },
 };
