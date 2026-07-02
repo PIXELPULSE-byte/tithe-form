@@ -22,10 +22,18 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+type CountryCode = "+968" | "+91";
+
+const COUNTRY_CODES: CountryCode[] = ["+968", "+91"];
+
+function phoneDigitsFor(cc: CountryCode) {
+  return cc === "+91" ? 10 : 8;
+}
+
 type Entry = {
   id: string;
   name: string;
-  countryCode: "+968";
+  countryCode: CountryCode;
   phone: string;
   currency: "OMR";
   amount: number;
@@ -96,7 +104,7 @@ function Index() {
     }
   });
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState<"+968">("+968");
+  const [countryCode, setCountryCode] = useState<CountryCode>("+968");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState<"OMR">("OMR");
   const [amount, setAmount] = useState("");
@@ -127,7 +135,7 @@ function Index() {
 
   const isDark = darkMode;
 
-  const phoneDigits = 8;
+  const phoneDigits = phoneDigitsFor(countryCode);
 
   // Persist to localStorage on every change
   useEffect(() => {
@@ -666,9 +674,14 @@ function Index() {
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">
-                  +968
-                </div>
+                <select
+                  value={countryCode}
+                  onChange={(e) => { setCountryCode(e.target.value as CountryCode); setPhone(""); }}
+                  style={{ ...styles.input, width: 90, flexShrink: 0, fontWeight: 600, background: "#f1f5f9", textAlign: "center" }}
+                  className="theme-phone-prefix"
+                >
+                  {COUNTRY_CODES.map((cc) => <option key={cc} value={cc}>{cc}</option>)}
+                </select>
                 <input
                   type="tel"
                   value={phone}
@@ -840,7 +853,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 type Person = {
   id: string;
   name: string;
-  countryCode: "+968";
+  countryCode: CountryCode;
   phone: string;
   bornYear: string;
   title: "Brother" | "Sister";
@@ -852,6 +865,7 @@ function InfoOfPeople() {
   const [people, setPeople] = useState<Person[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [name, setName] = useState("");
+  const [countryCode, setCountryCode] = useState<CountryCode>("+968");
   const [phone, setPhone] = useState("");
   const [bornYear, setBornYear] = useState("");
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
@@ -872,28 +886,29 @@ function InfoOfPeople() {
   }, [people, hydrated]);
 
   const currentYear = new Date().getFullYear();
+  const phoneDigits = phoneDigitsFor(countryCode);
 
   function reset() {
-    setName(""); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
+    setName(""); setCountryCode("+968"); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    if (phone.length !== 8) { window.alert("Phone number must be exactly 8 digits for +968."); return; }
+    if (phone.length !== phoneDigits) { window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`); return; }
     const yr = parseInt(bornYear, 10);
     if (!yr || yr < 1900 || yr > currentYear) { window.alert(`Born year must be between 1900 and ${currentYear}.`); return; }
     if (editingId) {
-      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), phone, bornYear: String(yr), title, countryCode: "+968" } : p));
+      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), countryCode, phone, bornYear: String(yr), title } : p));
     } else {
-      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode: "+968", phone, bornYear: String(yr), title }, ...prev]);
+      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode, phone, bornYear: String(yr), title }, ...prev]);
     }
     reset();
   }
 
   function startEdit(p: Person) {
     setEditingId(p.id);
-    setName(p.name); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
+    setName(p.name); setCountryCode(p.countryCode); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -922,10 +937,17 @@ function InfoOfPeople() {
           </Field>
           <Field label="Phone Number">
             <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">+968</div>
+              <select
+                value={countryCode}
+                onChange={(e) => { setCountryCode(e.target.value as CountryCode); setPhone(""); }}
+                style={{ ...styles.input, width: 90, flexShrink: 0, fontWeight: 600, background: "#f1f5f9", textAlign: "center" }}
+                className="theme-phone-prefix"
+              >
+                {COUNTRY_CODES.map((cc) => <option key={cc} value={cc}>{cc}</option>)}
+              </select>
               <input type="tel" value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="8 digits" style={styles.input} className="theme-input" required />
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, phoneDigits))}
+                placeholder={`${phoneDigits} digits`} style={styles.input} className="theme-input" required />
             </div>
           </Field>
           <Field label="Born Year">
