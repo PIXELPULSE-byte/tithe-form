@@ -853,7 +853,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 type Person = {
   id: string;
   name: string;
-  countryCode: "+968";
+  countryCode: CountryCode;
   phone: string;
   bornYear: string;
   title: "Brother" | "Sister";
