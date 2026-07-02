@@ -674,9 +674,14 @@ function Index() {
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">
-                  +968
-                </div>
+                <select
+                  value={countryCode}
+                  onChange={(e) => { setCountryCode(e.target.value as CountryCode); setPhone(""); }}
+                  style={{ ...styles.input, width: 90, flexShrink: 0, fontWeight: 600, background: "#f1f5f9", textAlign: "center" }}
+                  className="theme-phone-prefix"
+                >
+                  {COUNTRY_CODES.map((cc) => <option key={cc} value={cc}>{cc}</option>)}
+                </select>
                 <input
                   type="tel"
                   value={phone}
