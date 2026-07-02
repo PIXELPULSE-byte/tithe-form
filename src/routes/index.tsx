@@ -123,7 +123,7 @@ function Index() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 2600);
+    const t = setTimeout(() => setShowSplash(false), 10000);
     return () => clearTimeout(t);
   }, []);
 
