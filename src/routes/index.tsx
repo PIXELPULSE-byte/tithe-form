@@ -22,10 +22,18 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+type CountryCode = "+968" | "+91";
+
+const COUNTRY_CODES: CountryCode[] = ["+968", "+91"];
+
+function phoneDigitsFor(cc: CountryCode) {
+  return cc === "+91" ? 10 : 8;
+}
+
 type Entry = {
   id: string;
   name: string;
-  countryCode: "+968";
+  countryCode: CountryCode;
   phone: string;
   currency: "OMR";
   amount: number;
