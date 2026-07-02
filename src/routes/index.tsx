@@ -865,6 +865,7 @@ function InfoOfPeople() {
   const [people, setPeople] = useState<Person[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [name, setName] = useState("");
+  const [countryCode, setCountryCode] = useState<CountryCode>("+968");
   const [phone, setPhone] = useState("");
   const [bornYear, setBornYear] = useState("");
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
@@ -885,28 +886,29 @@ function InfoOfPeople() {
   }, [people, hydrated]);
 
   const currentYear = new Date().getFullYear();
+  const phoneDigits = phoneDigitsFor(countryCode);
 
   function reset() {
-    setName(""); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
+    setName(""); setCountryCode("+968"); setPhone(""); setBornYear(""); setTitle("Brother"); setEditingId(null);
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    if (phone.length !== 8) { window.alert("Phone number must be exactly 8 digits for +968."); return; }
+    if (phone.length !== phoneDigits) { window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`); return; }
     const yr = parseInt(bornYear, 10);
     if (!yr || yr < 1900 || yr > currentYear) { window.alert(`Born year must be between 1900 and ${currentYear}.`); return; }
     if (editingId) {
-      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), phone, bornYear: String(yr), title, countryCode: "+968" } : p));
+      setPeople((prev) => prev.map((p) => p.id === editingId ? { ...p, name: name.trim(), countryCode, phone, bornYear: String(yr), title } : p));
     } else {
-      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode: "+968", phone, bornYear: String(yr), title }, ...prev]);
+      setPeople((prev) => [{ id: crypto.randomUUID(), name: name.trim(), countryCode, phone, bornYear: String(yr), title }, ...prev]);
     }
     reset();
   }
 
   function startEdit(p: Person) {
     setEditingId(p.id);
-    setName(p.name); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
+    setName(p.name); setCountryCode(p.countryCode); setPhone(p.phone); setBornYear(p.bornYear); setTitle(p.title);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
