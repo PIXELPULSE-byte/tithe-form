@@ -120,6 +120,12 @@ function Index() {
   const [darkMode, setDarkMode] = useState(false);
   const [view, setView] = useState<"tithe" | "info">("tithe");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSplash(false), 2600);
+    return () => clearTimeout(t);
+  }, []);
 
   // Hydrate theme after mount to avoid SSR/CSR mismatch
   useEffect(() => {
@@ -508,6 +514,31 @@ function Index() {
 
   return (
     <>
+      <style>{`
+        @keyframes cfa-splash-fade { 0%{opacity:0;transform:scale(.85)} 40%{opacity:1;transform:scale(1)} 85%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.05)} }
+        @keyframes cfa-splash-text { 0%{opacity:0;transform:translateY(20px)} 40%{opacity:0;transform:translateY(20px)} 65%{opacity:1;transform:translateY(0)} 100%{opacity:1;transform:translateY(0)} }
+        @keyframes cfa-splash-bar { 0%{width:0} 100%{width:100%} }
+        @keyframes cfa-splash-out { to{opacity:0;visibility:hidden} }
+        .cfa-splash {
+          position: fixed; inset: 0; z-index: 9999;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          background: radial-gradient(circle at 50% 40%, #1e293b 0%, #0f172a 70%, #020617 100%);
+          animation: cfa-splash-out 0.6s ease 2s forwards;
+        }
+        .cfa-splash-logo { width: 180px; height: 180px; object-fit: contain; animation: cfa-splash-fade 2.2s ease forwards; filter: drop-shadow(0 10px 30px rgba(96,165,250,0.4)); }
+        .cfa-splash-text { margin-top: 24px; height: 60px; object-fit: contain; filter: brightness(0) invert(1); animation: cfa-splash-text 2.4s ease forwards; opacity: 0; }
+        .cfa-splash-sub { margin-top: 10px; color: #cbd5e1; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; animation: cfa-splash-text 2.6s ease forwards; opacity: 0; }
+        .cfa-splash-bar { margin-top: 32px; width: 220px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; }
+        .cfa-splash-bar::after { content:''; display:block; height:100%; background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6); animation: cfa-splash-bar 2.2s ease forwards; }
+      `}</style>
+      {showSplash && (
+        <div className="cfa-splash">
+          <img src={cfaLogo.url} alt="CFA" className="cfa-splash-logo" />
+          <img src={cfaText.url} alt="Christian Faith Assembly" className="cfa-splash-text" />
+          <div className="cfa-splash-sub">Tithe Registration</div>
+          <div className="cfa-splash-bar" />
+        </div>
+      )}
       <style>{`
         .btn-glow { transition: all 0.2s ease; }
         .btn-glow:hover:not(:disabled) {
