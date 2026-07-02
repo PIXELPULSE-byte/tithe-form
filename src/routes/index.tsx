@@ -104,7 +104,7 @@ function Index() {
     }
   });
   const [name, setName] = useState("");
-  const [countryCode, setCountryCode] = useState<"+968">("+968");
+  const [countryCode, setCountryCode] = useState<CountryCode>("+968");
   const [phone, setPhone] = useState("");
   const [currency, setCurrency] = useState<"OMR">("OMR");
   const [amount, setAmount] = useState("");
@@ -135,7 +135,7 @@ function Index() {
 
   const isDark = darkMode;
 
-  const phoneDigits = 8;
+  const phoneDigits = phoneDigitsFor(countryCode);
 
   // Persist to localStorage on every change
   useEffect(() => {
