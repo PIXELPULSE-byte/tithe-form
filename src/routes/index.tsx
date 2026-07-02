@@ -937,10 +937,17 @@ function InfoOfPeople() {
           </Field>
           <Field label="Phone Number">
             <div style={{ display: "flex", gap: 8 }}>
-              <div style={{ ...styles.input, width: 90, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, background: "#f1f5f9" }} className="theme-phone-prefix">+968</div>
+              <select
+                value={countryCode}
+                onChange={(e) => { setCountryCode(e.target.value as CountryCode); setPhone(""); }}
+                style={{ ...styles.input, width: 90, flexShrink: 0, fontWeight: 600, background: "#f1f5f9", textAlign: "center" }}
+                className="theme-phone-prefix"
+              >
+                {COUNTRY_CODES.map((cc) => <option key={cc} value={cc}>{cc}</option>)}
+              </select>
               <input type="tel" value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="8 digits" style={styles.input} className="theme-input" required />
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, phoneDigits))}
+                placeholder={`${phoneDigits} digits`} style={styles.input} className="theme-input" required />
             </div>
           </Field>
           <Field label="Born Year">
