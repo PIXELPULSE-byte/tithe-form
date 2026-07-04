@@ -1044,6 +1044,180 @@ function InfoOfPeople() {
   );
 }
 
+const BAISA_DENOMS: Array<{ label: string; value: number }> = [
+  { label: "100 Baisa", value: 0.1 },
+  { label: "500 Baisa", value: 0.5 },
+  { label: "1 Rial", value: 1 },
+  { label: "5 Rial", value: 5 },
+  { label: "10 Rial", value: 10 },
+  { label: "20 Rial", value: 20 },
+  { label: "50 Rial", value: 50 },
+];
+
+function CalculatorView({ darkMode }: { darkMode: boolean }) {
+  const [display, setDisplay] = useState("0");
+  const [prev, setPrev] = useState<number | null>(null);
+  const [op, setOp] = useState<string | null>(null);
+  const [reset, setReset] = useState(false);
+  const [counts, setCounts] = useState<Record<string, string>>({});
+
+  // Calculator body = black in light mode, white in dark mode (as requested)
+  const bodyBg = darkMode ? "#f8fafc" : "#1f2937";
+  const bodyBorder = darkMode ? "#cbd5e1" : "#111827";
+  const screenBg = darkMode ? "#e2e8f0" : "#e8f0e8";
+  const screenColor = "#0f172a";
+  const numBg = darkMode ? "#e5e7eb" : "#111827";
+  const numColor = darkMode ? "#0f172a" : "#f9fafb";
+  const opBg = "#f1f5f9";
+  const opColor = "#0f172a";
+  const eqBg = "#0ea5e9";
+
+  function inputDigit(d: string) {
+    if (reset || display === "0") { setDisplay(d); setReset(false); return; }
+    if (display.length >= 14) return;
+    setDisplay(display + d);
+  }
+  function inputDot() {
+    if (reset) { setDisplay("0."); setReset(false); return; }
+    if (!display.includes(".")) setDisplay(display + ".");
+  }
+  function clearAll() { setDisplay("0"); setPrev(null); setOp(null); setReset(false); }
+  function applyOp(nextOp: string) {
+    const cur = parseFloat(display);
+    if (prev !== null && op && !reset) {
+      const r = compute(prev, cur, op);
+      setDisplay(String(r));
+      setPrev(r);
+    } else {
+      setPrev(cur);
+    }
+    setOp(nextOp);
+    setReset(true);
+  }
+  function compute(a: number, b: number, o: string) {
+    switch (o) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "×": return a * b;
+      case "÷": return b === 0 ? 0 : a / b;
+      default: return b;
+    }
+  }
+  function equals() {
+    if (prev === null || !op) return;
+    const cur = parseFloat(display);
+    const r = compute(prev, cur, op);
+    setDisplay(String(Number.isInteger(r) ? r : parseFloat(r.toFixed(6))));
+    setPrev(null); setOp(null); setReset(true);
+  }
+
+  const btn = (label: string, onClick: () => void, kind: "num" | "op" | "eq" | "clear" = "num") => {
+    const bg = kind === "eq" ? eqBg : kind === "op" ? opBg : kind === "clear" ? "#ef4444" : numBg;
+    const color = kind === "eq" ? "#fff" : kind === "op" ? opColor : kind === "clear" ? "#fff" : numColor;
+    return (
+      <button type="button" onClick={onClick} className="btn-glow" style={{
+        background: bg, color, border: "none", borderRadius: 12, padding: 0,
+        height: 56, fontSize: 22, fontWeight: 700, cursor: "pointer",
+        boxShadow: "0 4px 10px -3px rgba(0,0,0,0.25)",
+      }}>{label}</button>
+    );
+  };
+
+  const denomTotal = BAISA_DENOMS.reduce((s, d) => {
+    const n = parseInt(counts[d.label] || "0", 10) || 0;
+    return s + n * d.value;
+  }, 0);
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "start" }}>
+      {/* Calculator - centered in its column */}
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{
+          background: bodyBg, border: `2px solid ${bodyBorder}`, borderRadius: 24,
+          padding: 20, width: 300, boxShadow: "0 20px 40px -15px rgba(0,0,0,0.4)",
+        }}>
+          <div style={{
+            background: screenBg, borderRadius: 10, padding: "18px 14px",
+            marginBottom: 18, textAlign: "right", fontFamily: "'Courier New', monospace",
+            fontSize: 28, fontWeight: 700, color: screenColor, minHeight: 44,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            border: "1px solid rgba(0,0,0,0.15)",
+          }}>{display}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+            {btn("AC", clearAll, "clear")}
+            {btn("⌫", () => setDisplay(display.length > 1 ? display.slice(0, -1) : "0"), "op")}
+            {btn("%", () => setDisplay(String(parseFloat(display) / 100)), "op")}
+            {btn("÷", () => applyOp("÷"), "op")}
+            {btn("7", () => inputDigit("7"))}
+            {btn("8", () => inputDigit("8"))}
+            {btn("9", () => inputDigit("9"))}
+            {btn("×", () => applyOp("×"), "op")}
+            {btn("4", () => inputDigit("4"))}
+            {btn("5", () => inputDigit("5"))}
+            {btn("6", () => inputDigit("6"))}
+            {btn("−", () => applyOp("-"), "op")}
+            {btn("1", () => inputDigit("1"))}
+            {btn("2", () => inputDigit("2"))}
+            {btn("3", () => inputDigit("3"))}
+            {btn("+", () => applyOp("+"), "op")}
+            {btn("0", () => inputDigit("0"))}
+            {btn(".", inputDot)}
+            {btn("=", equals, "eq")}
+            {btn("±", () => setDisplay(String(-parseFloat(display))), "op")}
+          </div>
+        </div>
+      </div>
+
+      {/* Money counter */}
+      <div style={{
+        background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 14,
+        padding: 22, borderLeft: "6px solid #0ea5e9",
+      }} className="theme-form">
+        <h2 style={{ ...styles.h2, marginBottom: 6 }} className="theme-h2">💵 Money Counter</h2>
+        <p style={{ margin: "0 0 16px", fontSize: 13, color: "#64748b" }} className="theme-stat-label">
+          Enter the number of notes/coins for each denomination.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {BAISA_DENOMS.map((d) => {
+            const n = parseInt(counts[d.label] || "0", 10) || 0;
+            const sub = n * d.value;
+            return (
+              <div key={d.label} style={{ display: "grid", gridTemplateColumns: "110px 1fr 130px", gap: 10, alignItems: "center" }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }} className="theme-label">{d.label}</div>
+                <input
+                  type="number" min="0" inputMode="numeric" placeholder="0"
+                  value={counts[d.label] || ""}
+                  onChange={(e) => setCounts({ ...counts, [d.label]: e.target.value.replace(/\D/g, "") })}
+                  style={styles.input} className="theme-input"
+                />
+                <div style={{
+                  fontWeight: 700, color: "#059669", textAlign: "right",
+                  fontFamily: "'Courier New', monospace", fontSize: 15,
+                }}>{sub.toFixed(3)} OMR</div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{
+          marginTop: 18, padding: "14px 16px", borderRadius: 10,
+          background: "linear-gradient(135deg, #0ea5e9, #4A3F9F)", color: "white",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          boxShadow: "0 6px 14px -4px rgba(14,165,233,0.55)",
+        }}>
+          <span style={{ fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: 12 }}>Grand Total</span>
+          <span style={{ fontSize: 22, fontWeight: 800, fontFamily: "'Courier New', monospace" }}>{denomTotal.toFixed(3)} OMR</span>
+        </div>
+        <div style={{ marginTop: 10, fontSize: 12, fontStyle: "italic", color: "#64748b" }} className="theme-stat-label">
+          {amountInWords(denomTotal) || "—"}
+        </div>
+        <button type="button" onClick={() => setCounts({})} className="btn-glow" style={{ ...styles.secondaryBtn, marginTop: 14 }}>
+          Reset counts
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
