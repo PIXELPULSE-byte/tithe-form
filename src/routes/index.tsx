@@ -765,8 +765,8 @@ function Index() {
         ) : (
         <>
         <section style={styles.dashboard}>
-          <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
-          <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
+          <StatCard label={`Total OMR — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`} value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
+          <StatCard label={`Total Entries — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`} value={String(totals.count)} accent="#4A3F9F" />
         </section>
 
         {/* Month / Year selector */}
