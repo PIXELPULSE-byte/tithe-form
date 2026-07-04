@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
 import cfaText from "@/assets/cfa-text.png.asset.json";
 import bgWallpaper from "@/assets/bg-wallpaper.jpg";
-import windowsBuild from "@/assets/cfa-windows.zip.asset.json";
 import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel, PageOrientation, ImageRun,
@@ -118,7 +117,7 @@ function Index() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [view, setView] = useState<"tithe" | "info">("tithe");
+  const [view, setView] = useState<"tithe" | "info" | "calculator">("tithe");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
@@ -629,7 +628,7 @@ function Index() {
             </div>
             <div style={styles.headerCenter}>
               <img src={cfaText.url} alt="Christian Faith Assembly" style={styles.textImg} className="theme-text-img" />
-              <p style={styles.subtitle} className="theme-subtitle">{view === "tithe" ? "Tithe Registration" : "Info of People"}</p>
+              <p style={styles.subtitle} className="theme-subtitle">{view === "tithe" ? "Tithe Registration" : view === "info" ? "Info of People" : "Calculator"}</p>
             </div>
             <div style={styles.headerRight}>
               <button
@@ -682,12 +681,22 @@ function Index() {
               >
                 👥 Info of People
               </button>
+              <button
+                type="button"
+                onClick={() => { setView("calculator"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "calculator" ? styles.sidebarItemActive : {}) }}
+              >
+                🧮 Calculator
+              </button>
             </aside>
           </>
         )}
 
         {view === "info" ? (
           <InfoOfPeople />
+        ) : view === "calculator" ? (
+          <CalculatorView darkMode={darkMode} />
         ) : (
         <>
         <section style={styles.dashboard}>
@@ -845,19 +854,6 @@ function Index() {
         </>
         )}
       </div>
-      <a
-        href={windowsBuild.url}
-        download="CFA-Register-Windows.zip"
-        className="btn-glow"
-        style={styles.winDownload}
-        title="Download CFA Register for Windows 11 (.zip) — unzip and run CFA-Register.exe"
-      >
-        <span style={styles.winIcon} aria-hidden>⊞</span>
-        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.85 }}>Download for</span>
-          <span style={{ fontSize: 15, fontWeight: 800 }}>Windows 11</span>
-        </span>
-      </a>
     </div>
     </>
   );
