@@ -31,6 +31,7 @@ function phoneDigitsFor(cc: CountryCode) {
 
 type Entry = {
   id: string;
+  memberId: string;
   name: string;
   countryCode: CountryCode;
   phone: string;
@@ -39,6 +40,7 @@ type Entry = {
   category: string;
   method: string;
   note: string;
+  receiptNumber: string;
   title: "Brother" | "Sister";
   date: string; // ISO
 };
@@ -47,6 +49,25 @@ const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiv
 const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
 const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function generateMemberId(existing: Set<string>): string {
+  for (let i = 0; i < 500; i++) {
+    const id = String(Math.floor(1000 + Math.random() * 9000));
+    if (!existing.has(id)) return id;
+  }
+  // fallback: incremental
+  let n = 1000;
+  while (existing.has(String(n))) n++;
+  return String(n);
+}
+
+function normalizeName(n: string) {
+  return n.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 function formatAmount(amount: number) {
   return `${amount.toFixed(3)} OMR`;
@@ -110,7 +131,12 @@ function Index() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
   const [note, setNote] = useState("");
+  const [receiptNumber, setReceiptNumber] = useState("");
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
@@ -142,6 +168,30 @@ function Index() {
 
   const phoneDigits = phoneDigitsFor(countryCode);
 
+  // Registry: normalized name -> memberId (derived from all entries)
+  const memberRegistry = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of entries) {
+      if (e.memberId && e.name) {
+        const key = normalizeName(e.name);
+        if (!map.has(key)) map.set(key, e.memberId);
+      }
+    }
+    return map;
+  }, [entries]);
+
+  const previewMemberId = useMemo(() => {
+    const key = normalizeName(name);
+    if (!key) return "";
+    return memberRegistry.get(key) || "";
+  }, [name, memberRegistry]);
+
+  // When month/year changes, snap default date to first of that month
+  useEffect(() => {
+    const mm = String(selectedMonth + 1).padStart(2, "0");
+    setDate(`${selectedYear}-${mm}-01`);
+  }, [selectedYear, selectedMonth]);
+
   // Persist to localStorage on every change
   useEffect(() => {
     try {
@@ -153,15 +203,22 @@ function Index() {
 
   const totals = useMemo(() => {
     let omr = 0;
+    let count = 0;
     for (const e of entries) {
-      omr += e.amount;
+      const d = new Date(e.date);
+      if (d.getFullYear() === selectedYear && d.getMonth() === selectedMonth) {
+        omr += e.amount;
+        count++;
+      }
     }
-    return { omr, count: entries.length };
-  }, [entries]);
+    return { omr, count };
+  }, [entries, selectedYear, selectedMonth]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return entries.filter((e) => {
+      const d = new Date(e.date);
+      if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false;
       if (filterCurrency !== "ALL" && e.currency !== filterCurrency) return false;
       if (!q) return true;
       const fullPhone = `${e.countryCode} ${e.phone}`;
@@ -169,10 +226,12 @@ function Index() {
         e.name.toLowerCase().includes(q) ||
         fullPhone.toLowerCase().includes(q) ||
         e.phone.toLowerCase().includes(q) ||
-        e.category.toLowerCase().includes(q)
+        e.category.toLowerCase().includes(q) ||
+        (e.memberId || "").includes(q) ||
+        (e.receiptNumber || "").toLowerCase().includes(q)
       );
     });
-  }, [entries, query, filterCurrency]);
+  }, [entries, query, filterCurrency, selectedYear, selectedMonth]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -182,10 +241,14 @@ function Index() {
       window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`);
       return;
     }
+    const nameKey = normalizeName(name);
+    const existingId = memberRegistry.get(nameKey);
+    const usedIds = new Set(entries.map((en) => en.memberId).filter(Boolean));
+    const memberId = existingId || generateMemberId(usedIds);
     if (editingId) {
       setEntries((prev) => prev.map((en) =>
         en.id === editingId
-          ? { ...en, name, countryCode, phone, currency, amount: amt, category, method, note, title, date }
+          ? { ...en, memberId: en.memberId || memberId, name, countryCode, phone, currency, amount: amt, category, method, note, receiptNumber, title, date }
           : en
       ));
       setEditingId(null);
@@ -193,12 +256,13 @@ function Index() {
       setEntries((prev) => [
         {
           id: crypto.randomUUID(),
-          name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
+          memberId,
+          name, countryCode, phone, currency, amount: amt, category, method, note, receiptNumber, title, date,
         },
         ...prev,
       ]);
     }
-    setName(""); setPhone(""); setAmount(""); setNote("");
+    setName(""); setPhone(""); setAmount(""); setNote(""); setReceiptNumber("");
   }
 
   function startEdit(en: Entry) {
@@ -211,6 +275,7 @@ function Index() {
     setCategory(en.category);
     setMethod(en.method);
     setNote(en.note);
+    setReceiptNumber(en.receiptNumber || "");
     setTitle(en.title ?? "Brother");
     setDate(en.date);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -218,7 +283,7 @@ function Index() {
 
   function cancelEdit() {
     setEditingId(null);
-    setName(""); setPhone(""); setAmount(""); setNote("");
+    setName(""); setPhone(""); setAmount(""); setNote(""); setReceiptNumber("");
   }
 
   function deleteEntry(id: string) {
@@ -700,9 +765,65 @@ function Index() {
         ) : (
         <>
         <section style={styles.dashboard}>
-          <StatCard label="Total Omani Rial (OMR)" value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
-          <StatCard label="Total Entries" value={String(totals.count)} accent="#4A3F9F" />
+          <StatCard label={`Total OMR — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`} value={`${totals.omr.toFixed(3)} OMR`} accent="#6B9EFF" />
+          <StatCard label={`Total Entries — ${MONTH_NAMES[selectedMonth]} ${selectedYear}`} value={String(totals.count)} accent="#4A3F9F" />
         </section>
+
+        {/* Month / Year selector */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, position: "relative" }}>
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setShowMonthPicker((s) => !s)}
+              className="btn-glow"
+              style={{
+                background: "linear-gradient(135deg, #6B9EFF, #4A3F9F)",
+                color: "white", border: "none", borderRadius: 14,
+                padding: "14px 32px", cursor: "pointer",
+                boxShadow: "0 8px 20px -6px rgba(74,63,159,0.55)",
+                display: "flex", alignItems: "baseline", gap: 10,
+              }}
+              title="Change month"
+            >
+              <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.01em" }}>{MONTH_NAMES[selectedMonth]}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{selectedYear}</span>
+              <span style={{ marginLeft: 6, fontSize: 12 }}>▾</span>
+            </button>
+            {showMonthPicker && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+                background: "white", border: "1px solid #cbd5e1", borderRadius: 12,
+                boxShadow: "0 20px 40px -10px rgba(0,0,0,0.25)", padding: 14, zIndex: 60, minWidth: 300,
+              }} className="theme-form">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <button type="button" onClick={() => setSelectedYear((y) => y - 1)} className="btn-glow"
+                    style={{ background: "#f1f5f9", border: "none", borderRadius: 8, width: 34, height: 34, cursor: "pointer", fontWeight: 800 }}>‹</button>
+                  <span style={{ fontWeight: 800, fontSize: 16 }} className="theme-h2">{selectedYear}</span>
+                  <button type="button" onClick={() => setSelectedYear((y) => y + 1)} className="btn-glow"
+                    style={{ background: "#f1f5f9", border: "none", borderRadius: 8, width: 34, height: 34, cursor: "pointer", fontWeight: 800 }}>›</button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                  {MONTH_NAMES.map((m, idx) => {
+                    const active = idx === selectedMonth;
+                    return (
+                      <button key={m} type="button"
+                        onClick={() => { setSelectedMonth(idx); setShowMonthPicker(false); }}
+                        className="btn-glow"
+                        style={{
+                          padding: "10px 6px", borderRadius: 8, border: "1px solid #e2e8f0",
+                          background: active ? "linear-gradient(135deg,#6B9EFF,#4A3F9F)" : "#f8fafc",
+                          color: active ? "white" : "#0f172a",
+                          fontWeight: 700, fontSize: 13, cursor: "pointer",
+                        }}>
+                        {m.slice(0, 3)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} style={styles.form} className="theme-form">
           <div style={styles.formGrid}>
@@ -711,6 +832,11 @@ function Index() {
             </Field>
             <Field label="Person's Name">
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" style={styles.input} className="theme-input" required />
+              {previewMemberId && (
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", marginTop: 4 }}>
+                  Membership ID: <span style={{ fontFamily: "'Courier New', monospace" }}>{previewMemberId}</span>
+                </div>
+              )}
             </Field>
             <Field label="Phone Number">
               <div style={{ display: "flex", gap: 8 }}>
@@ -762,6 +888,9 @@ function Index() {
             <Field label="Note (optional)">
               <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reference / remark" style={styles.input} className="theme-input" />
             </Field>
+            <Field label="Receipt Number">
+              <input value={receiptNumber} onChange={(e) => setReceiptNumber(e.target.value)} placeholder="e.g. R-1024" style={styles.input} className="theme-input" />
+            </Field>
             <Field label="Title">
               <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
                 {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -810,12 +939,14 @@ function Index() {
           <table style={styles.table} className="theme-table">
             <thead>
               <tr>
+                <th style={styles.th}>Membership ID</th>
                 <th style={styles.th}>Date</th>
                 <th style={styles.th}>Title</th>
                 <th style={styles.th}>Name</th>
                 <th style={{ ...styles.th, ...styles.splitCol }}>Phone</th>
                 <th style={styles.th}>Category</th>
                 <th style={styles.th}>Method</th>
+                <th style={styles.th}>Receipt #</th>
                 <th style={styles.th}>Currency</th>
                 <th style={styles.th}>Amount</th>
                 <th style={styles.th}></th>
@@ -823,15 +954,17 @@ function Index() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={styles.empty} className="theme-empty">No records yet — log your first entry above.</td></tr>
+                <tr><td colSpan={11} style={styles.empty} className="theme-empty">No records for {MONTH_NAMES[selectedMonth]} {selectedYear} — log your first entry above.</td></tr>
               ) : filtered.map((e) => (
                 <tr key={e.id} style={{ ...styles.row, background: editingId === e.id ? "#fef3c7" : undefined }}>
+                  <td style={{ ...styles.td, fontFamily: "'Courier New', monospace", fontWeight: 700, color: "#4A3F9F" }}>{e.memberId || "—"}</td>
                   <td style={styles.td}>{e.date}</td>
                   <td style={styles.td}>{e.title ?? "—"}</td>
                   <td style={{ ...styles.td, fontWeight: 600 }}>{e.name}</td>
                   <td style={{ ...styles.td, ...styles.splitCol }}>{e.countryCode} {e.phone}</td>
                   <td style={styles.td}><span style={styles.pill}>{e.category}</span></td>
                   <td style={styles.td}>{e.method}</td>
+                  <td style={styles.td}>{e.receiptNumber || "—"}</td>
                   <td style={styles.td}>{e.currency}</td>
                   <td style={{ ...styles.td, fontWeight: 700, color: "#059669" }}>{formatAmount(e.amount)}</td>
                   <td style={styles.td}>
