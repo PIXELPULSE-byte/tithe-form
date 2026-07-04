@@ -31,6 +31,7 @@ function phoneDigitsFor(cc: CountryCode) {
 
 type Entry = {
   id: string;
+  memberId: string;
   name: string;
   countryCode: CountryCode;
   phone: string;
@@ -39,6 +40,7 @@ type Entry = {
   category: string;
   method: string;
   note: string;
+  receiptNumber: string;
   title: "Brother" | "Sister";
   date: string; // ISO
 };
@@ -47,6 +49,25 @@ const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiv
 const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
 const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function generateMemberId(existing: Set<string>): string {
+  for (let i = 0; i < 500; i++) {
+    const id = String(Math.floor(1000 + Math.random() * 9000));
+    if (!existing.has(id)) return id;
+  }
+  // fallback: incremental
+  let n = 1000;
+  while (existing.has(String(n))) n++;
+  return String(n);
+}
+
+function normalizeName(n: string) {
+  return n.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 function formatAmount(amount: number) {
   return `${amount.toFixed(3)} OMR`;
@@ -110,7 +131,12 @@ function Index() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [method, setMethod] = useState(METHODS[0]);
   const [note, setNote] = useState("");
+  const [receiptNumber, setReceiptNumber] = useState("");
   const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [filterCurrency, setFilterCurrency] = useState<"ALL" | "OMR">("ALL");
@@ -142,6 +168,30 @@ function Index() {
 
   const phoneDigits = phoneDigitsFor(countryCode);
 
+  // Registry: normalized name -> memberId (derived from all entries)
+  const memberRegistry = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const e of entries) {
+      if (e.memberId && e.name) {
+        const key = normalizeName(e.name);
+        if (!map.has(key)) map.set(key, e.memberId);
+      }
+    }
+    return map;
+  }, [entries]);
+
+  const previewMemberId = useMemo(() => {
+    const key = normalizeName(name);
+    if (!key) return "";
+    return memberRegistry.get(key) || "";
+  }, [name, memberRegistry]);
+
+  // When month/year changes, snap default date to first of that month
+  useEffect(() => {
+    const mm = String(selectedMonth + 1).padStart(2, "0");
+    setDate(`${selectedYear}-${mm}-01`);
+  }, [selectedYear, selectedMonth]);
+
   // Persist to localStorage on every change
   useEffect(() => {
     try {
@@ -153,15 +203,22 @@ function Index() {
 
   const totals = useMemo(() => {
     let omr = 0;
+    let count = 0;
     for (const e of entries) {
-      omr += e.amount;
+      const d = new Date(e.date);
+      if (d.getFullYear() === selectedYear && d.getMonth() === selectedMonth) {
+        omr += e.amount;
+        count++;
+      }
     }
-    return { omr, count: entries.length };
-  }, [entries]);
+    return { omr, count };
+  }, [entries, selectedYear, selectedMonth]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return entries.filter((e) => {
+      const d = new Date(e.date);
+      if (d.getFullYear() !== selectedYear || d.getMonth() !== selectedMonth) return false;
       if (filterCurrency !== "ALL" && e.currency !== filterCurrency) return false;
       if (!q) return true;
       const fullPhone = `${e.countryCode} ${e.phone}`;
@@ -169,10 +226,12 @@ function Index() {
         e.name.toLowerCase().includes(q) ||
         fullPhone.toLowerCase().includes(q) ||
         e.phone.toLowerCase().includes(q) ||
-        e.category.toLowerCase().includes(q)
+        e.category.toLowerCase().includes(q) ||
+        (e.memberId || "").includes(q) ||
+        (e.receiptNumber || "").toLowerCase().includes(q)
       );
     });
-  }, [entries, query, filterCurrency]);
+  }, [entries, query, filterCurrency, selectedYear, selectedMonth]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -182,10 +241,14 @@ function Index() {
       window.alert(`Phone number must be exactly ${phoneDigits} digits for ${countryCode}.`);
       return;
     }
+    const nameKey = normalizeName(name);
+    const existingId = memberRegistry.get(nameKey);
+    const usedIds = new Set(entries.map((en) => en.memberId).filter(Boolean));
+    const memberId = existingId || generateMemberId(usedIds);
     if (editingId) {
       setEntries((prev) => prev.map((en) =>
         en.id === editingId
-          ? { ...en, name, countryCode, phone, currency, amount: amt, category, method, note, title, date }
+          ? { ...en, memberId: en.memberId || memberId, name, countryCode, phone, currency, amount: amt, category, method, note, receiptNumber, title, date }
           : en
       ));
       setEditingId(null);
@@ -193,12 +256,13 @@ function Index() {
       setEntries((prev) => [
         {
           id: crypto.randomUUID(),
-          name, countryCode, phone, currency, amount: amt, category, method, note, title, date,
+          memberId,
+          name, countryCode, phone, currency, amount: amt, category, method, note, receiptNumber, title, date,
         },
         ...prev,
       ]);
     }
-    setName(""); setPhone(""); setAmount(""); setNote("");
+    setName(""); setPhone(""); setAmount(""); setNote(""); setReceiptNumber("");
   }
 
   function startEdit(en: Entry) {
@@ -211,6 +275,7 @@ function Index() {
     setCategory(en.category);
     setMethod(en.method);
     setNote(en.note);
+    setReceiptNumber(en.receiptNumber || "");
     setTitle(en.title ?? "Brother");
     setDate(en.date);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -218,7 +283,7 @@ function Index() {
 
   function cancelEdit() {
     setEditingId(null);
-    setName(""); setPhone(""); setAmount(""); setNote("");
+    setName(""); setPhone(""); setAmount(""); setNote(""); setReceiptNumber("");
   }
 
   function deleteEntry(id: string) {
