@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import cfaLogo from "@/assets/cfa-logo.png.asset.json";
 import cfaText from "@/assets/cfa-text.png.asset.json";
 import bgWallpaper from "@/assets/bg-wallpaper.jpg";
@@ -143,7 +143,7 @@ function Index() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [view, setView] = useState<"tithe" | "info" | "calculator">("tithe");
+  const [view, setView] = useState<"tithe" | "info" | "calculator" | "data">("tithe");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
@@ -185,6 +185,29 @@ function Index() {
     if (!key) return "";
     return memberRegistry.get(key) || "";
   }, [name, memberRegistry]);
+
+  // Auto-fill prompt when a known member's name is entered
+  const lastAskedRef = useRef<string>("");
+  useEffect(() => {
+    if (editingId) return;
+    const key = normalizeName(name);
+    if (!key || !previewMemberId) return;
+    if (lastAskedRef.current === key) return;
+    lastAskedRef.current = key;
+    const latest = entries.find((e) => e.memberId === previewMemberId);
+    if (!latest) return;
+    const ok = window.confirm(
+      `“${latest.name}” is already saved with Membership ID ${previewMemberId}.\n\nAuto-fill the saved details (title, phone, category, method, amount)?\nDate, note and receipt number will stay untouched.`
+    );
+    if (!ok) return;
+    setName(latest.name);
+    setTitle(latest.title ?? "Brother");
+    setCountryCode(latest.countryCode);
+    setPhone(latest.phone);
+    setCategory(latest.category);
+    setMethod(latest.method);
+    setAmount(String(latest.amount));
+  }, [previewMemberId, name, editingId, entries]);
 
   // When month/year changes, snap default date to first of that month
   useEffect(() => {
@@ -754,11 +777,21 @@ function Index() {
               >
                 Calculator
               </button>
+              <button
+                type="button"
+                onClick={() => { setView("data"); setSidebarOpen(false); }}
+                className="btn-glow"
+                style={{ ...styles.sidebarItem, ...(view === "data" ? styles.sidebarItemActive : {}) }}
+              >
+                📊 Data of People
+              </button>
             </aside>
           </>
         )}
 
-        {view === "info" ? (
+        {view === "data" ? (
+          <DataOfPeople entries={entries} isDark={isDark} />
+        ) : view === "info" ? (
           <InfoOfPeople />
         ) : view === "calculator" ? (
           <CalculatorView darkMode={darkMode} />
