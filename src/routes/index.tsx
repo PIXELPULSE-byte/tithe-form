@@ -1116,7 +1116,7 @@ function InfoOfPeople() {
               placeholder="e.g. 1995" style={styles.input} className="theme-input" required />
           </Field>
           <Field label="Title">
-            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
+            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister" | "Pastor")} style={styles.input} className="theme-input">
               <option value="Brother">Brother</option>
               <option value="Sister">Sister</option>
             </select>
