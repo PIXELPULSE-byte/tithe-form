@@ -46,7 +46,7 @@ type Entry = {
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
-const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
+const METHODS = ["Cash", "Cheque"];
 const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
 const MONTH_NAMES = [
