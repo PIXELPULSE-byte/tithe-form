@@ -1384,6 +1384,240 @@ function CalculatorView({ darkMode }: { darkMode: boolean }) {
   );
 }
 
+function DataOfPeople({ entries, isDark }: { entries: Entry[]; isDark: boolean }) {
+  const [memberIdInput, setMemberIdInput] = useState("");
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+
+  const cleanId = memberIdInput.trim();
+  const memberEntries = useMemo(
+    () => entries.filter((e) => e.memberId === cleanId),
+    [entries, cleanId]
+  );
+  const person = memberEntries[0];
+
+  const yearEntries = useMemo(
+    () => memberEntries.filter((e) => new Date(e.date).getFullYear() === year),
+    [memberEntries, year]
+  );
+
+  const givenDates = useMemo(() => {
+    const s = new Set<string>();
+    for (const e of yearEntries) s.add(e.date.slice(0, 10));
+    return s;
+  }, [yearEntries]);
+
+  const totalYear = yearEntries.reduce((s, e) => s + e.amount, 0);
+  const totalAll = memberEntries.reduce((s, e) => s + e.amount, 0);
+
+  // Pie chart by category (year scope)
+  const byCategory = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of yearEntries) map.set(e.category, (map.get(e.category) || 0) + e.amount);
+    return Array.from(map.entries()).map(([label, value]) => ({ label, value }));
+  }, [yearEntries]);
+  const pieColors = ["#6B9EFF", "#4A3F9F", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#ef4444"];
+
+  const textColor = isDark ? "#f8fafc" : "#0f172a";
+  const subText = isDark ? "#cbd5e1" : "#475569";
+  const cardBg = isDark ? "rgba(15,23,42,0.6)" : "#f8fafc";
+  const cardBorder = isDark ? "#334155" : "#e2e8f0";
+
+  return (
+    <div style={{ padding: "8px 4px 40px", color: textColor }}>
+      {/* Centered input */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 28 }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: "-0.01em" }}>Data of People</h2>
+        <p style={{ margin: 0, fontSize: 13, color: subText, textAlign: "center", maxWidth: 520 }}>
+          Enter a 4-digit Membership ID to view that person's full tithe history, giving calendar and category breakdown.
+        </p>
+        <label style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>Enter Membership ID</label>
+        <input
+          value={memberIdInput}
+          onChange={(e) => setMemberIdInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          placeholder="e.g. 1265"
+          inputMode="numeric"
+          style={{
+            width: 220, textAlign: "center", fontSize: 22, fontWeight: 800,
+            letterSpacing: "0.3em", padding: "12px 16px", borderRadius: 12,
+            border: `2px solid ${cardBorder}`, background: cardBg, color: textColor,
+            fontFamily: "'Courier New', monospace",
+          }}
+        />
+      </div>
+
+      {!cleanId ? (
+        <div style={{ textAlign: "center", color: subText, fontStyle: "italic", padding: "40px 20px" }}>
+          Start typing a Membership ID above to see that person's records.
+        </div>
+      ) : !person ? (
+        <div style={{ textAlign: "center", color: "#ef4444", fontWeight: 700, padding: "40px 20px" }}>
+          No member found with ID “{cleanId}”. Check the number and try again.
+        </div>
+      ) : (
+        <>
+          {/* Person summary */}
+          <div style={{
+            background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 14,
+            padding: 20, marginBottom: 20, display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14,
+          }}>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>Membership ID</div><div style={{ fontSize: 20, fontWeight: 800, fontFamily: "'Courier New', monospace" }}>{person.memberId}</div></div>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>Name</div><div style={{ fontSize: 18, fontWeight: 700 }}>{person.title} {person.name}</div></div>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>Phone</div><div style={{ fontSize: 16, fontWeight: 600 }}>{person.countryCode} {person.phone}</div></div>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>Total ({year})</div><div style={{ fontSize: 20, fontWeight: 800, color: "#10b981" }}>{totalYear.toFixed(3)} OMR</div></div>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>All-Time Total</div><div style={{ fontSize: 20, fontWeight: 800, color: "#6B9EFF" }}>{totalAll.toFixed(3)} OMR</div></div>
+            <div><div style={{ fontSize: 11, color: subText, fontWeight: 700, textTransform: "uppercase" }}>Total Entries</div><div style={{ fontSize: 20, fontWeight: 800 }}>{memberEntries.length}</div></div>
+          </div>
+
+          {/* Year navigation */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 16 }}>
+            <button type="button" onClick={() => setYear((y) => y - 1)} className="btn-glow"
+              style={{ background: "#4A3F9F", color: "white", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer" }}>‹</button>
+            <div style={{ fontSize: 22, fontWeight: 800 }}>Giving Calendar — {year}</div>
+            <button type="button" onClick={() => setYear((y) => y + 1)} className="btn-glow"
+              style={{ background: "#4A3F9F", color: "white", border: "none", borderRadius: 8, padding: "6px 14px", fontWeight: 800, cursor: "pointer" }}>›</button>
+          </div>
+          <p style={{ textAlign: "center", fontSize: 12, color: subText, marginTop: 0, marginBottom: 16 }}>
+            Dates highlighted in <span style={{ color: "#10b981", fontWeight: 800 }}>green</span> are days this member gave.
+          </p>
+
+          {/* 12 month mini-calendars */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginBottom: 28 }}>
+            {MONTH_NAMES.map((mName, mIdx) => (
+              <MiniMonth key={mName} year={year} monthIdx={mIdx} monthName={mName} givenDates={givenDates}
+                cardBg={cardBg} cardBorder={cardBorder} textColor={textColor} subText={subText} />
+            ))}
+          </div>
+
+          {/* Pie chart */}
+          <div style={{
+            background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 14,
+            padding: 20, marginBottom: 20,
+          }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 800, textAlign: "center" }}>
+              Giving by Category — {year}
+            </h3>
+            {byCategory.length === 0 ? (
+              <div style={{ textAlign: "center", color: subText, fontStyle: "italic", padding: 20 }}>No entries in {year}.</div>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 30 }}>
+                <PieChart data={byCategory} colors={pieColors} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {byCategory.map((d, i) => {
+                    const pct = totalYear ? (d.value / totalYear) * 100 : 0;
+                    return (
+                      <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
+                        <span style={{ width: 14, height: 14, borderRadius: 4, background: pieColors[i % pieColors.length] }} />
+                        <span style={{ fontWeight: 700 }}>{d.label}</span>
+                        <span style={{ color: subText }}>{d.value.toFixed(3)} OMR ({pct.toFixed(1)}%)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Logged Transactions */}
+          <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 14, padding: 20 }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 18, fontWeight: 800 }}>Logged Transactions ({memberEntries.length})</h3>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: isDark ? "#1e293b" : "#e2e8f0" }}>
+                    <th style={{ padding: 8, textAlign: "left" }}>Date</th>
+                    <th style={{ padding: 8, textAlign: "left" }}>Receipt #</th>
+                    <th style={{ padding: 8, textAlign: "left" }}>Category</th>
+                    <th style={{ padding: 8, textAlign: "left" }}>Method</th>
+                    <th style={{ padding: 8, textAlign: "right" }}>Amount</th>
+                    <th style={{ padding: 8, textAlign: "left" }}>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {memberEntries
+                    .slice()
+                    .sort((a, b) => (a.date < b.date ? 1 : -1))
+                    .map((e) => (
+                      <tr key={e.id} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td style={{ padding: 8 }}>{e.date}</td>
+                        <td style={{ padding: 8, fontFamily: "monospace" }}>{e.receiptNumber || "—"}</td>
+                        <td style={{ padding: 8 }}>{e.category}</td>
+                        <td style={{ padding: 8 }}>{e.method}</td>
+                        <td style={{ padding: 8, textAlign: "right", fontWeight: 700, color: "#10b981" }}>{e.amount.toFixed(3)} OMR</td>
+                        <td style={{ padding: 8, color: subText }}>{e.note || "—"}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MiniMonth({ year, monthIdx, monthName, givenDates, cardBg, cardBorder, textColor, subText }: {
+  year: number; monthIdx: number; monthName: string; givenDates: Set<string>;
+  cardBg: string; cardBorder: string; textColor: string; subText: string;
+}) {
+  const first = new Date(year, monthIdx, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+  const cells: Array<number | null> = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const dow = ["S", "M", "T", "W", "T", "F", "S"];
+  return (
+    <div style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 10, padding: 10 }}>
+      <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 6, color: textColor, textAlign: "center" }}>{monthName}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+        {dow.map((d, i) => (
+          <div key={i} style={{ fontSize: 9, fontWeight: 700, color: subText, textAlign: "center" }}>{d}</div>
+        ))}
+        {cells.map((d, i) => {
+          if (d === null) return <div key={i} />;
+          const iso = `${year}-${String(monthIdx + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const given = givenDates.has(iso);
+          return (
+            <div key={i} title={given ? `Gave on ${iso}` : iso} style={{
+              fontSize: 10, fontWeight: given ? 800 : 500,
+              textAlign: "center", padding: "3px 0", borderRadius: 4,
+              background: given ? "#10b981" : "transparent",
+              color: given ? "white" : textColor,
+            }}>{d}</div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PieChart({ data, colors }: { data: Array<{ label: string; value: number }>; colors: string[] }) {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  const size = 180, cx = size / 2, cy = size / 2, r = size / 2 - 4;
+  if (total <= 0) return null;
+  let acc = 0;
+  const slices = data.map((d, i) => {
+    const start = (acc / total) * Math.PI * 2 - Math.PI / 2;
+    acc += d.value;
+    const end = (acc / total) * Math.PI * 2 - Math.PI / 2;
+    const large = end - start > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end);
+    // full-circle single slice edge case
+    if (data.length === 1) {
+      return <circle key={i} cx={cx} cy={cy} r={r} fill={colors[i % colors.length]} />;
+    }
+    return (
+      <path key={i} d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`}
+        fill={colors[i % colors.length]} stroke="white" strokeWidth={1} />
+    );
+  });
+  return <svg width={size} height={size}>{slices}</svg>;
+}
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
