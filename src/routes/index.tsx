@@ -41,13 +41,13 @@ type Entry = {
   method: string;
   note: string;
   receiptNumber: string;
-  title: "Brother" | "Sister";
+  title: "Brother" | "Sister" | "Pastor";
   date: string; // ISO
 };
 
 const CATEGORIES = ["Tithe", "Offering", "Missions", "Building Fund", "Thanksgiving"];
-const METHODS = ["Cash", "Bank Transfer", "Card", "Cheque"];
-const TITLES: Array<"Brother" | "Sister"> = ["Brother", "Sister"];
+const METHODS = ["Cash", "Cheque"];
+const TITLES: Array<"Brother" | "Sister" | "Pastor"> = ["Brother", "Sister", "Pastor"];
 const STORAGE_KEY = "cfa-tithe-entries-v1";
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -132,7 +132,7 @@ function Index() {
   const [method, setMethod] = useState(METHODS[0]);
   const [note, setNote] = useState("");
   const [receiptNumber, setReceiptNumber] = useState("");
-  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const [title, setTitle] = useState<"Brother" | "Sister" | "Pastor">("Brother");
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
@@ -752,7 +752,7 @@ function Index() {
                 className="btn-glow"
                 style={{ ...styles.sidebarItem, ...(view === "calculator" ? styles.sidebarItemActive : {}) }}
               >
-                🧮 Calculator
+                Calculator
               </button>
             </aside>
           </>
@@ -892,7 +892,7 @@ function Index() {
               <input value={receiptNumber} onChange={(e) => setReceiptNumber(e.target.value)} placeholder="e.g. R-1024" style={styles.input} className="theme-input" />
             </Field>
             <Field label="Title">
-              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
+              <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister" | "Pastor")} style={styles.input} className="theme-input">
                 {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </Field>
@@ -1016,7 +1016,7 @@ type Person = {
   countryCode: CountryCode;
   phone: string;
   bornYear: string;
-  title: "Brother" | "Sister";
+  title: "Brother" | "Sister" | "Pastor";
 };
 
 const PEOPLE_KEY = "cfa-people-v1";
@@ -1028,7 +1028,7 @@ function InfoOfPeople() {
   const [countryCode, setCountryCode] = useState<CountryCode>("+968");
   const [phone, setPhone] = useState("");
   const [bornYear, setBornYear] = useState("");
-  const [title, setTitle] = useState<"Brother" | "Sister">("Brother");
+  const [title, setTitle] = useState<"Brother" | "Sister" | "Pastor">("Brother");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
@@ -1116,7 +1116,7 @@ function InfoOfPeople() {
               placeholder="e.g. 1995" style={styles.input} className="theme-input" required />
           </Field>
           <Field label="Title">
-            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister")} style={styles.input} className="theme-input">
+            <select value={title} onChange={(e) => setTitle(e.target.value as "Brother" | "Sister" | "Pastor")} style={styles.input} className="theme-input">
               <option value="Brother">Brother</option>
               <option value="Sister">Sister</option>
             </select>
