@@ -759,7 +759,7 @@ function Index() {
                 className="btn-glow"
                 style={{ ...styles.sidebarItem, ...(view === "tithe" ? styles.sidebarItemActive : {}) }}
               >
-                💰 Tithe Registration
+                Tithe Registration
               </button>
               <button
                 type="button"
@@ -767,7 +767,7 @@ function Index() {
                 className="btn-glow"
                 style={{ ...styles.sidebarItem, ...(view === "info" ? styles.sidebarItemActive : {}) }}
               >
-                👥 Info of People
+                Info of People
               </button>
               <button
                 type="button"
@@ -783,7 +783,7 @@ function Index() {
                 className="btn-glow"
                 style={{ ...styles.sidebarItem, ...(view === "data" ? styles.sidebarItemActive : {}) }}
               >
-                📊 Data of People
+                Data of People
               </button>
             </aside>
           </>
