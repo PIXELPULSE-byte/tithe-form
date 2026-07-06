@@ -1,0 +1,20 @@
+{
+  "name": "Tithe Registration",
+  "short_name": "Tithe",
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/819da2e6-e7be-4f8f-ac85-0ab980c5b47e/cfa-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/__l5e/assets-v1/819da2e6-e7be-4f8f-ac85-0ab980c5b47e/cfa-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#5c5ccc",
+  "background_color": "#ffffff"
+}
